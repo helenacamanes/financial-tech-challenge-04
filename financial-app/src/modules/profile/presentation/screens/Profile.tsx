@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   Text,
@@ -14,12 +14,10 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useTransactions } from "../../../../app/providers/TransactionProviders";
-import { useGoals } from "../../../../app/providers/GoalsProviders";
 import { useNotifications } from "../../../../app/providers/NotificationProviders";
 import { useAuth } from "../../../../app/providers/AuthProviders";
-import { signOutUser } from "../../../auth/domain/repositories/AuthRepository";
 import { RootStackParamList } from "../../../../core/@types/navigation";
+import { useProfileSummary } from "../../state/useProfileSummary";
 
 const TERMS_TEXT = `Termos de Uso — Lighthouse Finance
 
@@ -125,55 +123,24 @@ export default function Profile() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  const { transactions } = useTransactions();
-  const { goals } = useGoals();
   const { dailyReminderEnabled, toggleDailyReminder } = useNotifications();
-  const { user } = useAuth();
+  const { logout } = useAuth();
+  const {
+    displayName,
+    avatarLetter,
+    email,
+    daysOfUse,
+    totalTransactions,
+    activeGoals,
+  } = useProfileSummary();
 
   const [termsVisible, setTermsVisible] = useState(false);
   const [privacyVisible, setPrivacyVisible] = useState(false);
 
-  const totalTransactions = transactions.length;
-  const activeGoals = goals.filter((g) => g.current < g.target).length;
-
-  const displayName = useMemo(() => {
-    const name = user?.displayName?.trim();
-
-    if (name) return name;
-
-    const emailPrefix = user?.email?.split("@")[0]?.trim();
-
-    if (emailPrefix) {
-      return emailPrefix.charAt(0).toUpperCase() + emailPrefix.slice(1);
-    }
-
-    return "Usuário";
-  }, [user]);
-
-  const avatarLetter = useMemo(() => {
-    return displayName.charAt(0).toUpperCase();
-  }, [displayName]);
-
-  const userEmail = user?.email ?? "E-mail não disponível";
-
-  const daysOfUse = useMemo(() => {
-    const creationTime = user?.metadata?.creationTime;
-
-    if (!creationTime) return 0;
-
-    const createdAt = new Date(creationTime);
-    const now = new Date();
-    const diff = Math.floor(
-      (now.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    return Math.max(diff + 1, 1);
-  }, [user]);
-
   async function handleLogout() {
     try {
       console.log("Tentando sair da conta...");
-      await signOutUser();
+      await logout();
       console.log("Logout realizado com sucesso");
     } catch (error) {
       console.error("Erro ao sair:", error);
@@ -200,7 +167,7 @@ export default function Profile() {
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{displayName}</Text>
-              <Text style={styles.profileEmail}>{userEmail}</Text>
+              <Text style={styles.profileEmail}>{email}</Text>
             </View>
           </View>
 

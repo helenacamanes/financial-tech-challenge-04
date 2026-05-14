@@ -5,18 +5,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../core/@types/navigation";
-import { registerSchema, RegisterFormData } from "../../../../core/schemas/auth/registerSchema";
+import { registerSchema, RegisterFormData } from "../../../auth/schemas/registerSchema";
 import { FormField } from "../../../../shared/components/ui/FormField";
 import { CheckboxField } from "../../../../shared/components/ui/CheckboxField";
 import { Button } from "../../../../shared/components/ui/Buttons";
 import { ScreenTitle } from "../../../../shared/components/ui/ScreenTitle";
 import { ScreenSubtitle } from "../../../../shared/components/ui/ScreenSubtitle";
 import { COLORS } from "../../../../app/theme";
-import { registerWithEmail } from "../../../../app/providers/AuthProviders";
+import { useAuth } from "../../../../app/providers/AuthProviders";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Register">;
 
 export default function Register({ navigation }: Props) {
+  const { register } = useAuth();
+
   const {
     control,
     handleSubmit,
@@ -34,7 +36,7 @@ export default function Register({ navigation }: Props) {
 
   async function onSubmit(data: RegisterFormData) {
     try {
-      await registerWithEmail(data.name, data.email, data.password);
+      await register(data.name, data.email, data.password);
     } catch (error: any) {
       let message = "Não foi possível criar a conta.";
 

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   Text,
@@ -10,46 +10,11 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useTransactions } from "../../../../app/providers/TransactionProviders";
 import Svg, { Circle, G } from "react-native-svg";
-
-type CategoryTotal = {
-  label: string;
-  value: number;
-  color: string;
-  icon: string;
-};
-
-const CATEGORY_COLORS: Record<string, { color: string; icon: string }> = {
-  Mercado: { color: "#3B82F6", icon: "cart-outline" },
-  Transporte: { color: "#8B5CF6", icon: "car-outline" },
-  Moradia: { color: "#F97316", icon: "home-outline" },
-  Alimentação: { color: "#F59E0B", icon: "fast-food-outline" },
-  Lazer: { color: "#10B981", icon: "game-controller-outline" },
-  Tecnologia: { color: "#06B6D4", icon: "laptop-outline" },
-  Saúde: { color: "#EF4444", icon: "medkit-outline" },
-  Educação: { color: "#6366F1", icon: "school-outline" },
-  Salário: { color: "#22C55E", icon: "cash-outline" },
-  Assinaturas: { color: "#EC4899", icon: "repeat-outline" },
-  Pets: { color: "#F43F5E", icon: "paw-outline" },
-  Viagem: { color: "#14B8A6", icon: "airplane-outline" },
-  Outros: { color: "#A855F7", icon: "ellipsis-horizontal-outline" },
-};
-
-const MONTHS = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
-];
+import { CategoryTotal }
+  from "../../domain/entities/InsightsDashboard";
+import { useInsightsDashboard }
+  from "../../state/useInsightsDashboard";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
@@ -264,109 +229,16 @@ const barStyles = StyleSheet.create({
 
 export default function Insights() {
   const navigation = useNavigation();
-  const { transactions } = useTransactions();
   const [expandedAnalysis, setExpandedAnalysis] = useState(false);
-
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  const biggestExpense = useMemo(() => {
-    const expenses = transactions.filter((t) => {
-      const d = new Date(t.date);
-      return (
-        t.type === "expense" &&
-        d.getMonth() === currentMonth &&
-        d.getFullYear() === currentYear
-      );
-    });
-
-    if (!expenses.length) return null;
-
-    return expenses.reduce(
-      (max, t) => (t.value > max.value ? t : max),
-      expenses[0],
-    );
-  }, [transactions, currentMonth, currentYear]);
-
-  const categoryTotals = useMemo((): CategoryTotal[] => {
-    const map: Record<string, number> = {};
-
-    transactions
-      .filter((t) => {
-        if (t.type !== "expense") return false;
-        const d = new Date(t.date);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      })
-      .forEach((t) => {
-        map[t.title] = (map[t.title] || 0) + t.value;
-      });
-
-    return Object.entries(map)
-      .map(([label, value]) => ({
-        label,
-        value,
-        color: CATEGORY_COLORS[label]?.color ?? "#64748B",
-        icon: CATEGORY_COLORS[label]?.icon ?? "receipt-outline",
-      }))
-      .sort((a, b) => b.value - a.value);
-  }, [transactions, currentMonth, currentYear]);
-
-  const monthlyData = useMemo(() => {
-    return Array.from({ length: 6 }, (_, i) => {
-      const d = new Date(currentYear, currentMonth - 5 + i, 1);
-      const m = d.getMonth();
-      const y = d.getFullYear();
-
-      const income = transactions
-        .filter((t) => {
-          const td = new Date(t.date);
-          return (
-            t.type === "income" && td.getMonth() === m && td.getFullYear() === y
-          );
-        })
-        .reduce((acc, t) => acc + t.value, 0);
-
-      const expense = transactions
-        .filter((t) => {
-          const td = new Date(t.date);
-          return (
-            t.type === "expense" &&
-            td.getMonth() === m &&
-            td.getFullYear() === y
-          );
-        })
-        .reduce((acc, t) => acc + t.value, 0);
-
-      return { month: MONTHS[m], income, expense };
-    });
-  }, [transactions, currentMonth, currentYear]);
-
-  const monthBalance = useMemo(() => {
-    const income = transactions
-      .filter((t) => {
-        const d = new Date(t.date);
-        return (
-          t.type === "income" &&
-          d.getMonth() === currentMonth &&
-          d.getFullYear() === currentYear
-        );
-      })
-      .reduce((acc, t) => acc + t.value, 0);
-
-    const expense = transactions
-      .filter((t) => {
-        const d = new Date(t.date);
-        return (
-          t.type === "expense" &&
-          d.getMonth() === currentMonth &&
-          d.getFullYear() === currentYear
-        );
-      })
-      .reduce((acc, t) => acc + t.value, 0);
-
-    return { income, expense, balance: income - expense };
-  }, [transactions, currentMonth, currentYear]);
+  const {
+    biggestExpense,
+    categoryTotals,
+    monthlyData,
+    monthBalance,
+    averageMonthlyBalance,
+    expandedAnalysisText,
+    collapsedAnalysisText,
+  } = useInsightsDashboard();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -483,12 +355,7 @@ export default function Insights() {
             <Text style={styles.balanceSummaryLabel}>Média mensal</Text>
             <Text style={styles.balanceSummaryValue}>
               {formatCurrency(
-                monthlyData.reduce((acc, d) => acc + d.income - d.expense, 0) /
-                  Math.max(
-                    monthlyData.filter((d) => d.income > 0 || d.expense > 0)
-                      .length,
-                    1,
-                  ),
+                averageMonthlyBalance,
               )}
             </Text>
           </View>
@@ -498,14 +365,8 @@ export default function Insights() {
           <Text style={styles.cardTitle}>Análise detalhada</Text>
           <Text style={styles.analysisText}>
             {expandedAnalysis
-              ? `Com base nas suas transações, os seus maiores gastos estão concentrados em ${
-                  categoryTotals[0]?.label ?? "diversas categorias"
-                }${categoryTotals[1] ? ` e ${categoryTotals[1].label}` : ""}. ${
-                  monthBalance.balance >= 0
-                    ? `Este mês você tem um saldo positivo de ${formatCurrency(monthBalance.balance)}, o que representa ${Math.round((monthBalance.balance / Math.max(monthBalance.income, 1)) * 100)}% das suas receitas poupadas.`
-                    : `Este mês os gastos superaram as receitas em ${formatCurrency(Math.abs(monthBalance.balance))}. Considere reduzir gastos em ${categoryTotals[0]?.label ?? "categorias não essenciais"}.`
-                }`
-              : "Clique para ver a análise completa com base nas suas transações..."}
+              ? expandedAnalysisText
+              : collapsedAnalysisText}
           </Text>
           <TouchableOpacity
             style={styles.analysisBtn}

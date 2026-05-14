@@ -14,18 +14,23 @@ import { GoalsProvider }
 import { NotificationProvider }
   from "./NotificationProviders";
 
+import { OnboardingStoreProvider }
+  from "../../modules/onboarding/state/onboarding.store";
+
 export function AppProviders({
   children,
 }: PropsWithChildren) {
   return (
-    <AuthProvider>
-      <TransactionProvider>
-        <GoalsProvider>
-          <NotificationProvider>
-            {children}
-          </NotificationProvider>
-        </GoalsProvider>
-      </TransactionProvider>
-    </AuthProvider>
+    <OnboardingStoreProvider>
+      <AuthProvider>
+        <TransactionProvider>
+          <GoalsProvider>
+            <NotificationProvider>
+              {children}
+            </NotificationProvider>
+          </GoalsProvider>
+        </TransactionProvider>
+      </AuthProvider>
+    </OnboardingStoreProvider>
   );
 }

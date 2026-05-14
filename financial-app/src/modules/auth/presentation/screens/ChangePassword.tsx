@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { z } from "zod";
 import { useNavigation } from "@react-navigation/native";
-import { changeUserPassword } from "../../../../modules/auth/domain/repositories/AuthRepository";
+import { useAuth } from "../../../../app/providers/AuthProviders";
 import { ScreenTitle } from "../../../../shared/components/ui/ScreenTitle";
 import { FormField } from "../../../../shared/components/ui/FormField";
 import { Button } from "../../../../shared/components/ui/Buttons";
@@ -38,6 +38,7 @@ type FormErrors = {
 
 export default function ChangePassword() {
   const navigation = useNavigation();
+  const { changePassword } = useAuth();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -70,7 +71,7 @@ export default function ChangePassword() {
       setErrors({});
       setLoading(true);
 
-      await changeUserPassword(currentPassword, newPassword);
+      await changePassword(currentPassword, newPassword);
 
       Alert.alert("Sucesso", "Sua senha foi alterada com sucesso.");
       navigation.goBack();

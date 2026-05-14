@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -11,50 +11,19 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { exportToPDF } from "../../../../shared/services/export/exportService";
-import { useTransactions } from "../../../../app/providers/TransactionProviders";
 import { RootStackParamList } from "../../../../core/@types/navigation";
-import { useAuth } from "../../../../app/providers/AuthProviders";
+import { useHomeDashboard } from "../../state/useHomeDashboard";
 
 export default function Home() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { transactions } = useTransactions();
-  const { user } = useAuth();
-
-  const firstName = useMemo(() => {
-    const displayName = user?.displayName?.trim();
-
-    if (displayName) {
-      return displayName.split(/\s+/)[0];
-    }
-
-    const emailName = user?.email?.split("@")[0]?.trim();
-
-    if (emailName) {
-      return emailName.charAt(0).toUpperCase() + emailName.slice(1);
-    }
-
-    return "Usuário";
-  }, [user]);
-
-  const totals = useMemo(() => {
-    const income = transactions
-      .filter((t) => t.type === "income")
-      .reduce((acc, t) => acc + t.value, 0);
-
-    const expense = transactions
-      .filter((t) => t.type === "expense")
-      .reduce((acc, t) => acc + t.value, 0);
-
-    return { total: income - expense, income, expense };
-  }, [transactions]);
-
-  const recentTransactions = useMemo(() => {
-    return [...transactions]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
-  }, [transactions]);
+  const {
+    firstName,
+    totals,
+    recentTransactions,
+    savingsPercent,
+    exportReport,
+  } = useHomeDashboard();
 
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -63,11 +32,8 @@ export default function Home() {
     }).format(value);
 
   const handleExport = () => {
-    exportToPDF(transactions, "Março");
+    void exportReport("Março");
   };
-
-  const savings =
-    totals.income > 0 ? ((totals.total / totals.income) * 100).toFixed(0) : "0";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -172,7 +138,7 @@ export default function Home() {
                 <View style={styles.statTrend}>
                   <Ionicons name="arrow-up" size={11} color="#4ADE80" />
                   <Text style={[styles.statTrendText, { color: "#4ADE80" }]}>
-                    {savings}% vs mês anterior
+                    {savingsPercent}% vs mês anterior
                   </Text>
                 </View>
               </View>

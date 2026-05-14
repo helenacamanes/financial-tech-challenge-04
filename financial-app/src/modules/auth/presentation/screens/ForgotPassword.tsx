@@ -8,17 +8,19 @@ import { RootStackParamList } from "../../../../core/@types/navigation";
 import {
   forgotPasswordSchema,
   ForgotPasswordFormData,
-} from "../../../../core/schemas/auth/forgotPasswordSchema";
+} from "../../schemas/forgotPasswordSchema";
 import { FormField } from "../../../../shared/components/ui/FormField";
 import { Button } from "../../../../shared/components/ui/Buttons";
 import { ScreenTitle } from "../../../../shared/components/ui/ScreenTitle";
 import { ScreenSubtitle } from "../../../../shared/components/ui/ScreenSubtitle";
 import { COLORS } from "../../../../app/theme";
-import { resetPassword } from "../../../../modules/auth/domain/repositories/AuthRepository";
+import { useAuth } from "../../../../app/providers/AuthProviders";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ForgotPassword">;
 
 export default function ForgotPassword({ navigation }: Props) {
+  const { resetPassword } = useAuth();
+
   const {
     control,
     handleSubmit,

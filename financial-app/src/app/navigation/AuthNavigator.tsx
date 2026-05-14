@@ -7,8 +7,11 @@ import {
 import Login from "../../modules/auth/presentation/screens/Login";
 import Register from "../../modules/register/presentation/screens/Register";
 import ForgotPassword from "../../modules/auth/presentation/screens/ForgotPassword";
+import { RootStackParamList }
+  from "../../core/@types/navigation";
 
-const Stack = createNativeStackNavigator();
+const Stack =
+  createNativeStackNavigator<RootStackParamList>();
 
 export function AuthNavigator() {
   return (

@@ -10,8 +10,11 @@ import AddTransaction from "../../modules/auth/presentation/screens/AddTransacti
 import Goals from "../../modules/goals/presentation/screens/Goals";
 import Profile from "../../modules/profile/presentation/screens/Profile";
 import ChangePassword from "../../modules/auth/presentation/screens/ChangePassword";
+import { RootStackParamList }
+  from "../../core/@types/navigation";
 
-const Stack = createNativeStackNavigator();
+const Stack =
+  createNativeStackNavigator<RootStackParamList>();
 
 export function MainNavigator() {
   return (
