@@ -6,7 +6,7 @@ import { useAuthState } from "../providers/AuthProviders";
 
 import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
 
-import { AppNavigator } from "./AppNavigator";
+import { AppRoutes } from "./AppRoutes";
 import { AuthNavigator } from "./AuthNavigator";
 import { OnboardingNavigator } from "./OnboardingNavigator";
 import {
@@ -59,5 +59,5 @@ export function RootNavigator() {
     return <AuthNavigator />;
   }
 
-  return <AppNavigator />;
+  return <AppRoutes />;
 }
