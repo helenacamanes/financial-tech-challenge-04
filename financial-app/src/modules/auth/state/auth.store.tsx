@@ -43,8 +43,11 @@ type AuthAction =
   | { type: "AUTH_ERROR"; payload: string }
   | { type: "AUTH_CLEAR_ERROR" };
 
-type AuthContextData = AuthState & {
+type AuthStateContextData = AuthState & {
   isAuthenticated: boolean;
+};
+
+type AuthActionsContextData = {
   login: (email: string, password: string) => Promise<void>;
   register: (
     name: string,
@@ -60,6 +63,10 @@ type AuthContextData = AuthState & {
   clearError: () => void;
 };
 
+type AuthContextData =
+  AuthStateContextData &
+  AuthActionsContextData;
+
 const initialState: AuthState = {
   user: null,
   status: "idle",
@@ -67,8 +74,11 @@ const initialState: AuthState = {
   error: null,
 };
 
-const AuthContext =
-  createContext<AuthContextData | null>(null);
+const AuthStateContext =
+  createContext<AuthStateContextData | null>(null);
+
+const AuthActionsContext =
+  createContext<AuthActionsContextData | null>(null);
 
 function authReducer(
   state: AuthState,
@@ -282,10 +292,16 @@ export function AuthStoreProvider({
     [],
   );
 
-  const value = useMemo(
+  const stateValue = useMemo(
     () => ({
       ...state,
       isAuthenticated: !!state.user,
+    }),
+    [state],
+  );
+
+  const actionsValue = useMemo(
+    () => ({
       login,
       register,
       logout,
@@ -294,7 +310,6 @@ export function AuthStoreProvider({
       clearError,
     }),
     [
-      state,
       login,
       register,
       logout,
@@ -322,22 +337,43 @@ export function AuthStoreProvider({
   }
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <AuthStateContext.Provider value={stateValue}>
+      <AuthActionsContext.Provider value={actionsValue}>
+        {children}
+      </AuthActionsContext.Provider>
+    </AuthStateContext.Provider>
   );
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext);
+export function useAuthState() {
+  const context = useContext(AuthStateContext);
 
   if (!context) {
     throw new Error(
-      "useAuth deve ser usado dentro de AuthStoreProvider.",
+      "useAuthState deve ser usado dentro de AuthStoreProvider.",
     );
   }
 
   return context;
+}
+
+export function useAuthActions() {
+  const context = useContext(AuthActionsContext);
+
+  if (!context) {
+    throw new Error(
+      "useAuthActions deve ser usado dentro de AuthStoreProvider.",
+    );
+  }
+
+  return context;
+}
+
+export function useAuth() {
+  return {
+    ...useAuthState(),
+    ...useAuthActions(),
+  };
 }
 
 export async function registerWithEmail(

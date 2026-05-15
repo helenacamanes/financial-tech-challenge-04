@@ -15,7 +15,7 @@ import { z } from "zod";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 
 import { RootStackParamList } from "../../../../core/@types/navigation";
-import { useTransactions } from "../../../../app/providers/TransactionProviders";
+import { useTransactionsActions } from "../../../../app/providers/TransactionProviders";
 
 import {
   EXPENSE_CATEGORIES,
@@ -112,7 +112,7 @@ function parseDate(value?: string) {
 export default function AddTransaction() {
   const navigation = useNavigation();
   const route = useRoute<AddTransactionRouteProp>();
-  const { addTransaction } = useTransactions();
+  const { addTransaction } = useTransactionsActions();
 
   const [form, setForm] = useState<FormData>({
     type: route.params.type,

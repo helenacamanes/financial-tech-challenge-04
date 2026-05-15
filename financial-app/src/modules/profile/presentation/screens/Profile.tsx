@@ -15,7 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useNotifications } from "../../../../app/providers/NotificationProviders";
-import { useAuth } from "../../../../app/providers/AuthProviders";
+import { useAuthActions } from "../../../../app/providers/AuthProviders";
 import { RootStackParamList } from "../../../../core/@types/navigation";
 import { useProfileSummary } from "../../state/useProfileSummary";
 
@@ -124,7 +124,7 @@ export default function Profile() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const { dailyReminderEnabled, toggleDailyReminder } = useNotifications();
-  const { logout } = useAuth();
+  const { logout } = useAuthActions();
   const {
     displayName,
     avatarLetter,

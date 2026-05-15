@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { z } from "zod";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../../../../app/providers/AuthProviders";
+import { useAuthActions } from "../../../../app/providers/AuthProviders";
 import { ScreenTitle } from "../../../../shared/components/ui/ScreenTitle";
 import { FormField } from "../../../../shared/components/ui/FormField";
 import { Button } from "../../../../shared/components/ui/Buttons";
@@ -38,7 +38,7 @@ type FormErrors = {
 
 export default function ChangePassword() {
   const navigation = useNavigation();
-  const { changePassword } = useAuth();
+  const { changePassword } = useAuthActions();
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");

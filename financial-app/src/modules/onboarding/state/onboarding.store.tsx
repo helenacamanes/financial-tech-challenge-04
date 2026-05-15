@@ -32,8 +32,16 @@ type OnboardingContextData = OnboardingState & {
   reload: () => Promise<void>;
 };
 
-const OnboardingContext =
-  createContext<OnboardingContextData | null>(null);
+type OnboardingActionsContextData = Omit<
+  OnboardingContextData,
+  keyof OnboardingState
+>;
+
+const OnboardingStateContext =
+  createContext<OnboardingState | null>(null);
+
+const OnboardingActionsContext =
+  createContext<OnboardingActionsContextData | null>(null);
 
 const initialState: OnboardingState = {
   loading: true,
@@ -136,15 +144,13 @@ export function OnboardingStoreProvider({
     [],
   );
 
-  const value = useMemo(
+  const actionsValue = useMemo(
     () => ({
-      ...state,
       completeOnboarding,
       resetOnboarding,
       reload,
     }),
     [
-      state,
       completeOnboarding,
       resetOnboarding,
       reload,
@@ -152,20 +158,41 @@ export function OnboardingStoreProvider({
   );
 
   return (
-    <OnboardingContext.Provider value={value}>
-      {children}
-    </OnboardingContext.Provider>
+    <OnboardingStateContext.Provider value={state}>
+      <OnboardingActionsContext.Provider value={actionsValue}>
+        {children}
+      </OnboardingActionsContext.Provider>
+    </OnboardingStateContext.Provider>
   );
 }
 
-export function useOnboardingStore() {
-  const context = useContext(OnboardingContext);
+export function useOnboardingState() {
+  const context = useContext(OnboardingStateContext);
 
   if (!context) {
     throw new Error(
-      "useOnboardingStore deve ser usado dentro de OnboardingStoreProvider.",
+      "useOnboardingState deve ser usado dentro de OnboardingStoreProvider.",
     );
   }
 
   return context;
+}
+
+export function useOnboardingActions() {
+  const context = useContext(OnboardingActionsContext);
+
+  if (!context) {
+    throw new Error(
+      "useOnboardingActions deve ser usado dentro de OnboardingStoreProvider.",
+    );
+  }
+
+  return context;
+}
+
+export function useOnboardingStore() {
+  return {
+    ...useOnboardingState(),
+    ...useOnboardingActions(),
+  };
 }

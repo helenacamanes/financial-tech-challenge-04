@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useReducer,
 } from "react";
 
@@ -15,7 +16,7 @@ import {
   updateTransactionUseCase,
 } from "@/infra/di/container";
 
-import { useAuth }
+import { useAuthState }
   from "@/modules/auth/state/auth.store";
 
 import { Transaction }
@@ -56,8 +57,16 @@ type TransactionContextData = TransactionsState & {
   ) => Promise<void>;
 };
 
-const TransactionContext =
-  createContext<TransactionContextData | null>(null);
+type TransactionActionsContextData = Omit<
+  TransactionContextData,
+  keyof TransactionsState
+>;
+
+const TransactionStateContext =
+  createContext<TransactionsState | null>(null);
+
+const TransactionActionsContext =
+  createContext<TransactionActionsContextData | null>(null);
 
 const initialState: TransactionsState = {
   transactions: [],
@@ -107,12 +116,19 @@ function getErrorMessage(
 export function TransactionsStoreProvider({
   children,
 }: PropsWithChildren) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const [state, dispatch] =
     useReducer(
       transactionsReducer,
       initialState,
     );
+  const transactionsRef =
+    useRef<Transaction[]>([]);
+
+  useEffect(() => {
+    transactionsRef.current =
+      state.transactions;
+  }, [state.transactions]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -164,7 +180,7 @@ export function TransactionsStoreProvider({
       transaction: Omit<Transaction, "id">,
     ) => {
       const currentTransaction =
-        state.transactions.find(
+        transactionsRef.current.find(
           (item) => item.id === id,
         );
 
@@ -185,7 +201,7 @@ export function TransactionsStoreProvider({
         currentTransaction,
       );
     },
-    [state.transactions],
+    [],
   );
 
   const removeTransaction = useCallback(
@@ -193,7 +209,7 @@ export function TransactionsStoreProvider({
       id: string,
     ) => {
       const transaction =
-        state.transactions.find(
+        transactionsRef.current.find(
           (item) => item.id === id,
         );
 
@@ -203,18 +219,16 @@ export function TransactionsStoreProvider({
         transaction,
       );
     },
-    [state.transactions],
+    [],
   );
 
-  const value = useMemo(
+  const actionsValue = useMemo(
     () => ({
-      ...state,
       addTransaction,
       updateTransaction,
       removeTransaction,
     }),
     [
-      state,
       addTransaction,
       updateTransaction,
       removeTransaction,
@@ -222,22 +236,43 @@ export function TransactionsStoreProvider({
   );
 
   return (
-    <TransactionContext.Provider value={value}>
-      {children}
-    </TransactionContext.Provider>
+    <TransactionStateContext.Provider value={state}>
+      <TransactionActionsContext.Provider value={actionsValue}>
+        {children}
+      </TransactionActionsContext.Provider>
+    </TransactionStateContext.Provider>
   );
 }
 
-export function useTransactions() {
-  const context = useContext(TransactionContext);
+export function useTransactionsState() {
+  const context = useContext(TransactionStateContext);
 
   if (!context) {
     throw new Error(
-      "useTransactions deve ser usado dentro de TransactionsStoreProvider.",
+      "useTransactionsState deve ser usado dentro de TransactionsStoreProvider.",
     );
   }
 
   return context;
+}
+
+export function useTransactionsActions() {
+  const context = useContext(TransactionActionsContext);
+
+  if (!context) {
+    throw new Error(
+      "useTransactionsActions deve ser usado dentro de TransactionsStoreProvider.",
+    );
+  }
+
+  return context;
+}
+
+export function useTransactions() {
+  return {
+    ...useTransactionsState(),
+    ...useTransactionsActions(),
+  };
 }
 
 export type {

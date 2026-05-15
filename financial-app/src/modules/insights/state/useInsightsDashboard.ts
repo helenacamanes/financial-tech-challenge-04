@@ -2,11 +2,11 @@ import { useMemo } from "react";
 
 import { buildInsightsDashboardUseCase }
   from "@/infra/di/container";
-import { useTransactions }
+import { useTransactionsState }
   from "@/modules/transactions/state/transactions.store";
 
 export function useInsightsDashboard() {
-  const { transactions } = useTransactions();
+  const { transactions } = useTransactionsState();
 
   return useMemo(
     () =>

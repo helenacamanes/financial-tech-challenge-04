@@ -2,9 +2,9 @@ import React from "react";
 
 import { LoadingScreen } from "@/presentation/screens/loading/LoadingScreen";
 
-import { useAuth } from "../providers/AuthProviders";
+import { useAuthState } from "../providers/AuthProviders";
 
-import { useOnboarding } from "../../shared/hooks/UseOnboarding";
+import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
 
 import { AppNavigator } from "./AppNavigator";
 import { AuthNavigator } from "./AuthNavigator";
@@ -14,18 +14,18 @@ export function RootNavigator() {
   const {
     initializing,
     isAuthenticated,
-  } = useAuth();
+  } = useAuthState();
 
   const {
-    onboardingDone,
+    hasSeenOnboarding,
     loading,
-  } = useOnboarding();
+  } = useOnboardingState();
 
   if (initializing || loading) {
     return <LoadingScreen />;
   }
 
-  if (!onboardingDone) {
+  if (!hasSeenOnboarding) {
     return <OnboardingNavigator />;
   }
 

@@ -14,12 +14,12 @@ import { Button } from "../../../../shared/components/ui/Buttons";
 import { ScreenTitle } from "../../../../shared/components/ui/ScreenTitle";
 import { ScreenSubtitle } from "../../../../shared/components/ui/ScreenSubtitle";
 import { COLORS } from "../../../../app/theme";
-import { useAuth } from "../../../../app/providers/AuthProviders";
+import { useAuthActions } from "../../../../app/providers/AuthProviders";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ForgotPassword">;
 
 export default function ForgotPassword({ navigation }: Props) {
-  const { resetPassword } = useAuth();
+  const { resetPassword } = useAuthActions();
 
   const {
     control,

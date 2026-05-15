@@ -3,8 +3,8 @@ import { View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../core/@types/navigation";
-import { useAuth } from "../providers/AuthProviders";
-import { useOnboardingStore } from "../../modules/onboarding/state/onboarding.store";
+import { useAuthState } from "../../modules/auth/state/auth.store";
+import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
 
 import Onboarding from "../../modules/onboarding/presentation/screens/Onboarding";
 import Login from "../../modules/auth/presentation/screens/Login";
@@ -20,11 +20,11 @@ import ChangePassword from "../../modules/auth/presentation/screens/ChangePasswo
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function AppNavigator() {
-  const { isAuthenticated, initializing } = useAuth();
+  const { isAuthenticated, initializing } = useAuthState();
   const {
     loading: onboardingLoading,
     hasSeenOnboarding,
-  } = useOnboardingStore();
+  } = useOnboardingState();
 
   if (initializing || onboardingLoading) {
     return (

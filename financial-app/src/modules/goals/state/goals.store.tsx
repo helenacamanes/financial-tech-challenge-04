@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useReducer,
 } from "react";
 
@@ -15,7 +16,7 @@ import {
   updateGoalUseCase,
 } from "@/infra/di/container";
 
-import { useAuth }
+import { useAuthState }
   from "@/modules/auth/state/auth.store";
 
 import { notifyGoalReached }
@@ -55,8 +56,16 @@ type GoalsContextData = GoalsState & {
   removeGoal: (goalId: string) => Promise<void>;
 };
 
-const GoalsContext =
-  createContext<GoalsContextData | null>(null);
+type GoalsActionsContextData = Omit<
+  GoalsContextData,
+  keyof GoalsState
+>;
+
+const GoalsStateContext =
+  createContext<GoalsState | null>(null);
+
+const GoalsActionsContext =
+  createContext<GoalsActionsContextData | null>(null);
 
 const initialState: GoalsState = {
   goals: [],
@@ -106,12 +115,19 @@ function getErrorMessage(
 export function GoalsStoreProvider({
   children,
 }: PropsWithChildren) {
-  const { user } = useAuth();
+  const { user } = useAuthState();
   const [state, dispatch] =
     useReducer(
       goalsReducer,
       initialState,
     );
+  const goalsRef =
+    useRef<Goal[]>([]);
+
+  useEffect(() => {
+    goalsRef.current =
+      state.goals;
+  }, [state.goals]);
 
   useEffect(() => {
     if (!user?.uid) {
@@ -163,7 +179,7 @@ export function GoalsStoreProvider({
       amount: number,
     ) => {
       const currentGoal =
-        state.goals.find(
+        goalsRef.current.find(
           (goal) => goal.id === goalId,
         );
 
@@ -190,7 +206,7 @@ export function GoalsStoreProvider({
         );
       }
     },
-    [state.goals],
+    [],
   );
 
   const removeGoal = useCallback(
@@ -204,15 +220,13 @@ export function GoalsStoreProvider({
     [],
   );
 
-  const value = useMemo(
+  const actionsValue = useMemo(
     () => ({
-      ...state,
       addGoal,
       addValueToGoal,
       removeGoal,
     }),
     [
-      state,
       addGoal,
       addValueToGoal,
       removeGoal,
@@ -220,22 +234,43 @@ export function GoalsStoreProvider({
   );
 
   return (
-    <GoalsContext.Provider value={value}>
-      {children}
-    </GoalsContext.Provider>
+    <GoalsStateContext.Provider value={state}>
+      <GoalsActionsContext.Provider value={actionsValue}>
+        {children}
+      </GoalsActionsContext.Provider>
+    </GoalsStateContext.Provider>
   );
 }
 
-export function useGoals() {
-  const context = useContext(GoalsContext);
+export function useGoalsState() {
+  const context = useContext(GoalsStateContext);
 
   if (!context) {
     throw new Error(
-      "useGoals deve ser usado dentro de GoalsStoreProvider.",
+      "useGoalsState deve ser usado dentro de GoalsStoreProvider.",
     );
   }
 
   return context;
+}
+
+export function useGoalsActions() {
+  const context = useContext(GoalsActionsContext);
+
+  if (!context) {
+    throw new Error(
+      "useGoalsActions deve ser usado dentro de GoalsStoreProvider.",
+    );
+  }
+
+  return context;
+}
+
+export function useGoals() {
+  return {
+    ...useGoalsState(),
+    ...useGoalsActions(),
+  };
 }
 
 export type { Goal };

@@ -14,7 +14,7 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../core/@types/navigation";
 import OnboardingItem from "../../../../shared/components/OnboardingItem";
 import { darkTheme as COLORS } from "../../../../app/theme";
-import { useOnboardingStore } from "../../state/onboarding.store";
+import { useOnboardingActions } from "../../state/onboarding.store";
 import { OnboardingSlide } from "../../domain/entities/OnboardingSlide";
 
 const slides: OnboardingSlide[] = [
@@ -47,7 +47,7 @@ export default function Onboarding({ navigation }: Props) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList<any> | null>(null);
   const { width } = useWindowDimensions();
-  const { completeOnboarding } = useOnboardingStore();
+  const { completeOnboarding } = useOnboardingActions();
 
   async function handleFinish() {
     await completeOnboarding();

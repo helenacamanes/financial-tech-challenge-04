@@ -4,14 +4,14 @@ import {
   buildHomeDashboardUseCase,
   exportMonthlyReportUseCase,
 } from "@/infra/di/container";
-import { useAuth }
+import { useAuthState }
   from "@/modules/auth/state/auth.store";
-import { useTransactions }
+import { useTransactionsState }
   from "@/modules/transactions/state/transactions.store";
 
 export function useHomeDashboard() {
-  const { user } = useAuth();
-  const { transactions } = useTransactions();
+  const { user } = useAuthState();
+  const { transactions } = useTransactionsState();
 
   const dashboard = useMemo(
     () =>

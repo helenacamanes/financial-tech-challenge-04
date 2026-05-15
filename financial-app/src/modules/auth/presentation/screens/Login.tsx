@@ -14,7 +14,7 @@ import { NativeStackScreenProps }
 
 import { COLORS }
   from "@/app/theme";
-import { useAuth }
+import { useAuthActions }
   from "@/app/providers/AuthProviders";
 import { RootStackParamList }
   from "@/core/@types/navigation";
@@ -38,7 +38,7 @@ type Props =
 export default function Login({
   navigation,
 }: Props) {
-  const { login } = useAuth();
+  const { login } = useAuthActions();
 
   const {
     control,

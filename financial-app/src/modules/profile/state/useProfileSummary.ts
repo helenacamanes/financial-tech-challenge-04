@@ -2,17 +2,17 @@ import { useMemo } from "react";
 
 import { buildProfileSummaryUseCase }
   from "@/infra/di/container";
-import { useAuth }
+import { useAuthState }
   from "@/modules/auth/state/auth.store";
-import { useGoals }
+import { useGoalsState }
   from "@/modules/goals/state/goals.store";
-import { useTransactions }
+import { useTransactionsState }
   from "@/modules/transactions/state/transactions.store";
 
 export function useProfileSummary() {
-  const { user } = useAuth();
-  const { goals } = useGoals();
-  const { transactions } = useTransactions();
+  const { user } = useAuthState();
+  const { goals } = useGoalsState();
+  const { transactions } = useTransactionsState();
 
   return useMemo(
     () =>

@@ -6,11 +6,11 @@ import {
   Text,
 } from "react-native";
 
-import { useGoals }
+import { useGoalsState }
   from "@/app/providers/GoalsProviders";
 
 export default function Goals() {
-  const { goals } = useGoals();
+  const { goals } = useGoalsState();
 
   return (
     <View>
