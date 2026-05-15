@@ -4,11 +4,13 @@ import {
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
 
-import Login from "../../modules/auth/presentation/screens/Login";
-import Register from "../../modules/register/presentation/screens/Register";
-import ForgotPassword from "../../modules/auth/presentation/screens/ForgotPassword";
 import { RootStackParamList }
   from "../../core/@types/navigation";
+import {
+  getForgotPasswordScreen,
+  getLoginScreen,
+  getRegisterScreen,
+} from "./lazyScreens";
 
 const Stack =
   createNativeStackNavigator<RootStackParamList>();
@@ -22,17 +24,17 @@ export function AuthNavigator() {
     >
       <Stack.Screen
         name="Login"
-        component={Login}
+        getComponent={getLoginScreen}
       />
 
       <Stack.Screen
         name="Register"
-        component={Register}
+        getComponent={getRegisterScreen}
       />
 
       <Stack.Screen
         name="ForgotPassword"
-        component={ForgotPassword}
+        getComponent={getForgotPasswordScreen}
       />
     </Stack.Navigator>
   );

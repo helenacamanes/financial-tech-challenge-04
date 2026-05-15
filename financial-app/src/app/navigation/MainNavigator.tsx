@@ -4,14 +4,16 @@ import {
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
 
-import Home from "../../modules/home/presentation/screens/Home";
-import Transactions from "../../modules/transactions/presentation/screens/Transactions";
-import AddTransaction from "../../modules/auth/presentation/screens/AddTransaction";
-import Goals from "../../modules/goals/presentation/screens/Goals";
-import Profile from "../../modules/profile/presentation/screens/Profile";
-import ChangePassword from "../../modules/auth/presentation/screens/ChangePassword";
 import { RootStackParamList }
   from "../../core/@types/navigation";
+import {
+  getAddTransactionScreen,
+  getChangePasswordScreen,
+  getGoalsScreen,
+  getHomeScreen,
+  getProfileScreen,
+  getTransactionsScreen,
+} from "./lazyScreens";
 
 const Stack =
   createNativeStackNavigator<RootStackParamList>();
@@ -26,22 +28,22 @@ export function MainNavigator() {
     >
       <Stack.Screen
         name="Home"
-        component={Home}
+        getComponent={getHomeScreen}
       />
 
       <Stack.Screen
         name="AddTransaction"
-        component={AddTransaction}
+        getComponent={getAddTransactionScreen}
       />
 
       <Stack.Screen
         name="Transactions"
-        component={Transactions}
+        getComponent={getTransactionsScreen}
       />
 
       <Stack.Screen
         name="AddGoal"
-        component={Goals}
+        getComponent={getGoalsScreen}
         options={{
           presentation: "transparentModal",
           animation: "slide_from_bottom",
@@ -50,12 +52,12 @@ export function MainNavigator() {
 
       <Stack.Screen
         name="Profile"
-        component={Profile}
+        getComponent={getProfileScreen}
       />
 
       <Stack.Screen
         name="ChangePassword"
-        component={ChangePassword}
+        getComponent={getChangePasswordScreen}
       />
     </Stack.Navigator>
   );

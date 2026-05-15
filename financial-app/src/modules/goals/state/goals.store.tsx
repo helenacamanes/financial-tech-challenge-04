@@ -18,6 +18,8 @@ import {
 
 import { useAuthState }
   from "@/modules/auth/state/auth.store";
+import { MemoryCache }
+  from "@/core/cache/memoryCache";
 
 import { notifyGoalReached }
   from "@/shared/services/notification/notificationService";
@@ -40,11 +42,18 @@ type GoalsState = {
   goals: Goal[];
   status: GoalsStatus;
   error: string | null;
+  lastUpdated: number | null;
+  source: "empty" | "cache" | "network";
 };
 
 type GoalsAction =
   | { type: "GOALS_LOADING" }
-  | { type: "GOALS_LOADED"; payload: Goal[] }
+  | {
+      type: "GOALS_LOADED";
+      payload: Goal[];
+      source: "cache" | "network";
+      updatedAt?: number;
+    }
   | { type: "GOALS_ERROR"; payload: string };
 
 type GoalsContextData = GoalsState & {
@@ -71,7 +80,12 @@ const initialState: GoalsState = {
   goals: [],
   status: "idle",
   error: null,
+  lastUpdated: null,
+  source: "empty",
 };
+
+const goalsCache =
+  new MemoryCache<Goal[]>();
 
 function goalsReducer(
   state: GoalsState,
@@ -81,7 +95,10 @@ function goalsReducer(
     case "GOALS_LOADING":
       return {
         ...state,
-        status: "loading",
+        status:
+          state.goals.length > 0
+            ? "success"
+            : "loading",
         error: null,
       };
 
@@ -90,6 +107,9 @@ function goalsReducer(
         goals: action.payload,
         status: "success",
         error: null,
+        lastUpdated:
+          action.updatedAt ?? Date.now(),
+        source: action.source,
       };
 
     case "GOALS_ERROR":
@@ -134,8 +154,23 @@ export function GoalsStoreProvider({
       dispatch({
         type: "GOALS_LOADED",
         payload: [],
+        source: "network",
       });
       return;
+    }
+
+    const cacheKey =
+      `goals:${user.uid}`;
+    const cached =
+      goalsCache.get(cacheKey);
+
+    if (cached) {
+      dispatch({
+        type: "GOALS_LOADED",
+        payload: cached.value,
+        source: "cache",
+        updatedAt: cached.updatedAt,
+      });
     }
 
     dispatch({ type: "GOALS_LOADING" });
@@ -144,9 +179,15 @@ export function GoalsStoreProvider({
       const unsubscribe =
         subscribeToGoalsUseCase.execute(
           (goals) => {
+            goalsCache.set(
+              cacheKey,
+              goals,
+            );
+
             dispatch({
               type: "GOALS_LOADED",
               payload: goals,
+              source: "network",
             });
           },
         );

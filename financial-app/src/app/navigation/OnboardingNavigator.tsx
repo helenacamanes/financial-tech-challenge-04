@@ -4,9 +4,10 @@ import {
   createNativeStackNavigator,
 } from "@react-navigation/native-stack";
 
-import Onboarding from "../../modules/onboarding/presentation/screens/Onboarding";
 import { RootStackParamList }
   from "../../core/@types/navigation";
+import { getOnboardingScreen }
+  from "./lazyScreens";
 
 const Stack =
   createNativeStackNavigator<RootStackParamList>();
@@ -20,7 +21,7 @@ export function OnboardingNavigator() {
     >
       <Stack.Screen
         name="Onboarding"
-        component={Onboarding}
+        getComponent={getOnboardingScreen}
       />
     </Stack.Navigator>
   );

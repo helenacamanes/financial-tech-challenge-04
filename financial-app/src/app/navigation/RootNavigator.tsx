@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { LoadingScreen } from "@/presentation/screens/loading/LoadingScreen";
 
@@ -9,6 +9,11 @@ import { useOnboardingState } from "../../modules/onboarding/state/onboarding.st
 import { AppNavigator } from "./AppNavigator";
 import { AuthNavigator } from "./AuthNavigator";
 import { OnboardingNavigator } from "./OnboardingNavigator";
+import {
+  preloadAuthScreens,
+  preloadAuthenticatedScreens,
+  preloadOnboardingScreens,
+} from "./lazyScreens";
 
 export function RootNavigator() {
   const {
@@ -20,6 +25,27 @@ export function RootNavigator() {
     hasSeenOnboarding,
     loading,
   } = useOnboardingState();
+
+  useEffect(() => {
+    if (initializing || loading) return;
+
+    if (!hasSeenOnboarding) {
+      preloadOnboardingScreens();
+      return;
+    }
+
+    if (!isAuthenticated) {
+      preloadAuthScreens();
+      return;
+    }
+
+    preloadAuthenticatedScreens();
+  }, [
+    initializing,
+    loading,
+    hasSeenOnboarding,
+    isAuthenticated,
+  ]);
 
   if (initializing || loading) {
     return <LoadingScreen />;

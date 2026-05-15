@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -6,16 +6,21 @@ import { RootStackParamList } from "../../core/@types/navigation";
 import { useAuthState } from "../../modules/auth/state/auth.store";
 import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
 
-import Onboarding from "../../modules/onboarding/presentation/screens/Onboarding";
-import Login from "../../modules/auth/presentation/screens/Login";
-import Register from "../../modules/register/presentation/screens/Register";
-import Home from "../../modules/home/presentation/screens/Home";
-import AddTransaction from "../../modules/auth/presentation/screens/AddTransaction";
-import ForgotPassword from "../../modules/auth/presentation/screens/ForgotPassword";
-import Transactions from "../../modules/transactions/presentation/screens/Transactions";
-import Goals from "../../modules/goals/presentation/screens/Goals";
-import Profile from "../../modules/profile/presentation/screens/Profile";
-import ChangePassword from "../../modules/auth/presentation/screens/ChangePassword";
+import {
+  getAddTransactionScreen,
+  getChangePasswordScreen,
+  getForgotPasswordScreen,
+  getGoalsScreen,
+  getHomeScreen,
+  getLoginScreen,
+  getOnboardingScreen,
+  getProfileScreen,
+  getRegisterScreen,
+  getTransactionsScreen,
+  preloadAuthScreens,
+  preloadAuthenticatedScreens,
+  preloadOnboardingScreens,
+} from "./lazyScreens";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -25,6 +30,27 @@ export function AppNavigator() {
     loading: onboardingLoading,
     hasSeenOnboarding,
   } = useOnboardingState();
+
+  useEffect(() => {
+    if (initializing || onboardingLoading) return;
+
+    if (isAuthenticated) {
+      preloadAuthenticatedScreens();
+      return;
+    }
+
+    if (!hasSeenOnboarding) {
+      preloadOnboardingScreens();
+      return;
+    }
+
+    preloadAuthScreens();
+  }, [
+    initializing,
+    onboardingLoading,
+    isAuthenticated,
+    hasSeenOnboarding,
+  ]);
 
   if (initializing || onboardingLoading) {
     return (
@@ -51,27 +77,42 @@ export function AppNavigator() {
       {!isAuthenticated ? (
         <>
           {!hasSeenOnboarding && (
-            <Stack.Screen name="Onboarding" component={Onboarding} />
+            <Stack.Screen
+              name="Onboarding"
+              getComponent={getOnboardingScreen}
+            />
           )}
-          <Stack.Screen name="Login" component={Login} />
-          <Stack.Screen name="Register" component={Register} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPassword} />
+          <Stack.Screen name="Login" getComponent={getLoginScreen} />
+          <Stack.Screen name="Register" getComponent={getRegisterScreen} />
+          <Stack.Screen
+            name="ForgotPassword"
+            getComponent={getForgotPasswordScreen}
+          />
         </>
       ) : (
         <>
-          <Stack.Screen name="Home" component={Home} />
-          <Stack.Screen name="AddTransaction" component={AddTransaction} />
-          <Stack.Screen name="Transactions" component={Transactions} />
+          <Stack.Screen name="Home" getComponent={getHomeScreen} />
+          <Stack.Screen
+            name="AddTransaction"
+            getComponent={getAddTransactionScreen}
+          />
+          <Stack.Screen
+            name="Transactions"
+            getComponent={getTransactionsScreen}
+          />
           <Stack.Screen
             name="AddGoal"
-            component={Goals}
+            getComponent={getGoalsScreen}
             options={{
               presentation: "transparentModal",
               animation: "slide_from_bottom",
             }}
           />
-          <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name="ChangePassword" component={ChangePassword} />
+          <Stack.Screen name="Profile" getComponent={getProfileScreen} />
+          <Stack.Screen
+            name="ChangePassword"
+            getComponent={getChangePasswordScreen}
+          />
         </>
       )}
     </Stack.Navigator>

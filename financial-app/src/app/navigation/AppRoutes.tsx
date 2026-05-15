@@ -3,9 +3,11 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../core/@types/navigation";
 import { MainTabs } from "./tabs/MainTabs";
-import AddTransaction from "../../modules/auth/presentation/screens/AddTransaction";
-import Insights from "../../modules/insights/presentation/screens/Insights";
-import ChangePassword from "../../modules/auth/presentation/screens/ChangePassword";
+import {
+  getAddTransactionScreen,
+  getChangePasswordScreen,
+  getInsightsScreen,
+} from "./lazyScreens";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -19,9 +21,18 @@ export function AppRoutes() {
       }}
     >
       <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="AddTransaction" component={AddTransaction} />
-      <Stack.Screen name="Insights" component={Insights} />
-      <Stack.Screen name="ChangePassword" component={ChangePassword} />
+      <Stack.Screen
+        name="AddTransaction"
+        getComponent={getAddTransactionScreen}
+      />
+      <Stack.Screen
+        name="Insights"
+        getComponent={getInsightsScreen}
+      />
+      <Stack.Screen
+        name="ChangePassword"
+        getComponent={getChangePasswordScreen}
+      />
     </Stack.Navigator>
   );
 }

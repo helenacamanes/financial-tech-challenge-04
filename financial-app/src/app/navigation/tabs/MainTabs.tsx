@@ -75,7 +75,7 @@ export function MainTabs() {
             name={
               name as keyof MainTabParamList
             }
-            component={config.component}
+            getComponent={config.getComponent}
             options={{
               tabBarLabel: config.label,
             }}

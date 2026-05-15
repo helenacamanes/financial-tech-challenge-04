@@ -1,17 +1,18 @@
 import { Ionicons } from "@expo/vector-icons";
 
-import Home from "../../../modules/home/presentation/screens/Home";
-import Transactions from "../../../modules/transactions/presentation/screens/Transactions";
-import Goals from "../../../modules/goals/presentation/screens/Goals";
-import Profile from "../../../modules/profile/presentation/screens/Profile";
-
 import { MainTabParamList }
   from "../../../app/navigation/types";
+import {
+  getGoalsScreen,
+  getHomeScreen,
+  getProfileScreen,
+  getTransactionsScreen,
+} from "../lazyScreens";
 
 type TabConfig = {
   label: string;
 
-  component: React.ComponentType<any>;
+  getComponent: () => React.ComponentType<any>;
 
   activeIcon:
     React.ComponentProps<
@@ -31,7 +32,7 @@ export const tabsConfig: Record<
   HomeTab: {
     label: "Início",
 
-    component: Home,
+    getComponent: getHomeScreen,
 
     activeIcon: "home",
 
@@ -41,7 +42,7 @@ export const tabsConfig: Record<
   TransactionsTab: {
     label: "Transações",
 
-    component: Transactions,
+    getComponent: getTransactionsScreen,
 
     activeIcon: "list",
 
@@ -51,7 +52,7 @@ export const tabsConfig: Record<
   GoalsTab: {
     label: "Metas",
 
-    component: Goals,
+    getComponent: getGoalsScreen,
 
     activeIcon: "flag",
 
@@ -61,7 +62,7 @@ export const tabsConfig: Record<
   ProfileTab: {
     label: "Perfil",
 
-    component: Profile,
+    getComponent: getProfileScreen,
 
     activeIcon: "person",
 

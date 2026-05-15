@@ -18,6 +18,8 @@ import {
 
 import { useAuthState }
   from "@/modules/auth/state/auth.store";
+import { MemoryCache }
+  from "@/core/cache/memoryCache";
 
 import { Transaction }
   from "../domain/entities/Transaction";
@@ -37,11 +39,18 @@ type TransactionsState = {
   transactions: Transaction[];
   status: TransactionsStatus;
   error: string | null;
+  lastUpdated: number | null;
+  source: "empty" | "cache" | "network";
 };
 
 type TransactionsAction =
   | { type: "TRANSACTIONS_LOADING" }
-  | { type: "TRANSACTIONS_LOADED"; payload: Transaction[] }
+  | {
+      type: "TRANSACTIONS_LOADED";
+      payload: Transaction[];
+      source: "cache" | "network";
+      updatedAt?: number;
+    }
   | { type: "TRANSACTIONS_ERROR"; payload: string };
 
 type TransactionContextData = TransactionsState & {
@@ -72,7 +81,12 @@ const initialState: TransactionsState = {
   transactions: [],
   status: "idle",
   error: null,
+  lastUpdated: null,
+  source: "empty",
 };
+
+const transactionsCache =
+  new MemoryCache<Transaction[]>();
 
 function transactionsReducer(
   state: TransactionsState,
@@ -82,7 +96,10 @@ function transactionsReducer(
     case "TRANSACTIONS_LOADING":
       return {
         ...state,
-        status: "loading",
+        status:
+          state.transactions.length > 0
+            ? "success"
+            : "loading",
         error: null,
       };
 
@@ -91,6 +108,9 @@ function transactionsReducer(
         transactions: action.payload,
         status: "success",
         error: null,
+        lastUpdated:
+          action.updatedAt ?? Date.now(),
+        source: action.source,
       };
 
     case "TRANSACTIONS_ERROR":
@@ -135,8 +155,23 @@ export function TransactionsStoreProvider({
       dispatch({
         type: "TRANSACTIONS_LOADED",
         payload: [],
+        source: "network",
       });
       return;
+    }
+
+    const cacheKey =
+      `transactions:${user.uid}`;
+    const cached =
+      transactionsCache.get(cacheKey);
+
+    if (cached) {
+      dispatch({
+        type: "TRANSACTIONS_LOADED",
+        payload: cached.value,
+        source: "cache",
+        updatedAt: cached.updatedAt,
+      });
     }
 
     dispatch({ type: "TRANSACTIONS_LOADING" });
@@ -145,9 +180,15 @@ export function TransactionsStoreProvider({
       const unsubscribe =
         subscribeToTransactionsUseCase.execute(
           (transactions) => {
+            transactionsCache.set(
+              cacheKey,
+              transactions,
+            );
+
             dispatch({
               type: "TRANSACTIONS_LOADED",
               payload: transactions,
+              source: "network",
             });
           },
         );
