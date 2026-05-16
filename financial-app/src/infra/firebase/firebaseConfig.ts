@@ -14,6 +14,7 @@ import {
 import {
   getFirestore,
   initializeFirestore,
+  persistentLocalCache,
   type Firestore,
 } from "firebase/firestore";
 
@@ -51,6 +52,7 @@ if (Platform.OS === "web") {
 
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({}),
     });
   } catch (error) {
     console.warn(
@@ -62,6 +64,7 @@ if (Platform.OS === "web") {
 
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({}),
     });
   }
 }

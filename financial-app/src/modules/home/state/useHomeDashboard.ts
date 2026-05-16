@@ -14,6 +14,8 @@ import { useAuthState }
 import type { Transaction }
   from "@/modules/transactions";
 
+import { MemoryCache } from "@/core/cache/memoryCache";
+
 function getMonthRange() {
   const now = new Date();
   const start = new Date(
@@ -27,8 +29,11 @@ function getMonthRange() {
     0,
     23, 59, 59, 999,
   );
-  return { start, end };
+  return { start, end, key: `${now.getFullYear()}-${now.getMonth()}` };
 }
+
+const cache =
+  new MemoryCache<Transaction[]>(60_000);
 
 export function useHomeDashboard() {
   const { user } = useAuthState();
@@ -39,12 +44,21 @@ export function useHomeDashboard() {
     useCallback(() => {
       if (!user?.uid) return;
 
-      const { start, end } = getMonthRange();
+      const { start, end, key } = getMonthRange();
+      const cached = cache.get(key);
+
+      if (cached) {
+        setTransactions(cached.value);
+        return;
+      }
 
       getTransactionsInDateRangeUseCase.execute(
         start,
         end,
-      ).then(setTransactions);
+      ).then((data) => {
+        cache.set(key, data);
+        setTransactions(data);
+      });
     }, [user?.uid]),
   );
 

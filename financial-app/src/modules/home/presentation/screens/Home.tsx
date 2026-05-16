@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -26,11 +26,11 @@ export default function Home() {
     exportReport,
   } = useHomeDashboard();
 
-  const formatCurrency = (value: number) =>
+  const formatCurrency = useCallback((value: number) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
       currency: "BRL",
-    }).format(value);
+    }).format(value), []);
 
   const handleExport = () => {
     void exportReport("Março");
