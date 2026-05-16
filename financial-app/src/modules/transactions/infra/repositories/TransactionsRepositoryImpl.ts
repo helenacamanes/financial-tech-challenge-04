@@ -5,6 +5,7 @@ import {
   CreateTransactionInput,
   ITransactionsRepository,
   PaginatedResult,
+  PaginationCursor,
   UpdateTransactionInput,
 } from "../../domain/repositories/ITransactionsRepository";
 
@@ -39,7 +40,7 @@ export class TransactionsRepositoryImpl
 
   async getTransactionsPaginated(
     pageLimit: number,
-    cursor?: { lastDate: number } | null,
+    cursor?: PaginationCursor | null,
   ): Promise<PaginatedResult<Transaction>> {
     return this.datasource.getTransactionsPaginated(
       pageLimit,

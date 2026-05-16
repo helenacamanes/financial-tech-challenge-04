@@ -89,6 +89,7 @@ function mapTransaction(
     value: data.amount,
     type: data.type,
     date: data.date?.toDate?.() ?? new Date(),
+    createdAt: data.createdAt?.toDate?.() ?? new Date(),
     description: data.description ?? "",
     account: data.account ?? "",
     attachment: data.attachment ?? null,
@@ -103,7 +104,7 @@ export class FirebaseTransactionsDatasource {
     const transactionsQuery = query(
       getTransactionsCollection(uid),
       orderBy(
-        "date",
+        "createdAt",
         "desc",
       ),
     );
@@ -137,9 +138,9 @@ export class FirebaseTransactionsDatasource {
     const uid = getCurrentUserId();
     const rangeQuery = query(
       getTransactionsCollection(uid),
-      where("date", ">=", Timestamp.fromDate(startDate)),
-      where("date", "<=", Timestamp.fromDate(endDate)),
-      orderBy("date", "desc"),
+      where("createdAt", ">=", Timestamp.fromDate(startDate)),
+      where("createdAt", "<=", Timestamp.fromDate(endDate)),
+      orderBy("createdAt", "desc"),
     );
 
     const snapshot = await getDocs(rangeQuery);
@@ -151,16 +152,16 @@ export class FirebaseTransactionsDatasource {
 
   async getTransactionsPaginated(
     pageLimit: number,
-    cursor?: { lastDate: number } | null,
+    cursor?: { lastCreatedAt: number } | null,
   ): Promise<PaginatedResult<Transaction>> {
     const uid = getCurrentUserId();
     const constraints: any[] = [
-      orderBy("date", "desc"),
+      orderBy("createdAt", "desc"),
     ];
 
     if (cursor) {
       constraints.push(
-        startAfter(new Date(cursor.lastDate)),
+        startAfter(new Date(cursor.lastCreatedAt)),
       );
     }
 
@@ -185,10 +186,10 @@ export class FirebaseTransactionsDatasource {
       ),
       cursor: lastDoc
         ? {
-            lastDate:
+            lastCreatedAt:
               lastDoc
                 .data()
-                .date.toDate()
+                .createdAt.toDate()
                 .getTime(),
           }
         : null,

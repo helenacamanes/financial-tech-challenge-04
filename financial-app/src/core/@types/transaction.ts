@@ -11,6 +11,7 @@ export type Transaction = {
   value: number;
   type: "income" | "expense";
   date: Date;
+  createdAt?: Date;
   description?: string;
   account?: string;
   attachment?: TransactionAttachment | null;

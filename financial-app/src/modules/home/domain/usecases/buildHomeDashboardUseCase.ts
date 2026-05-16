@@ -50,9 +50,13 @@ export class BuildHomeDashboardUseCase {
 
     const recentTransactions = [...transactions]
       .sort(
-        (a, b) =>
-          new Date(b.date).getTime() -
-          new Date(a.date).getTime(),
+        (a, b) => {
+          const aTime =
+            a.createdAt?.getTime() ?? a.date.getTime();
+          const bTime =
+            b.createdAt?.getTime() ?? b.date.getTime();
+          return bTime - aTime;
+        },
       )
       .slice(0, 5);
 

@@ -24,7 +24,7 @@ export type UpdateTransactionInput = {
 };
 
 export type PaginationCursor = {
-  lastDate: number;
+  lastCreatedAt: number;
 };
 
 export type PaginatedResult<T> = {

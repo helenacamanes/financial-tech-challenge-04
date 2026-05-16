@@ -9,15 +9,22 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { getCategoryIcon } from "../../../../core/utils";
+import { useNavigation, CompositeNavigationProp } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { getCategoryIcon } from "../../../../core/utils";
 import { RootStackParamList } from "../../../../core/@types/navigation";
+import { MainTabParamList } from "../../../../app/navigation/types";
 import { useHomeDashboard } from "../../state/useHomeDashboard";
+
+type HomeNavProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabParamList, "HomeTab">,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 export default function Home() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    useNavigation<HomeNavProp>();
   const {
     firstName,
     totals,
@@ -148,7 +155,7 @@ export default function Home() {
             <View style={styles.listHeader}>
               <Text style={styles.sectionTitle}>Transações recentes</Text>
               <TouchableOpacity
-                onPress={() => navigation.navigate("Transactions")}
+                onPress={() => navigation.navigate("TransactionsTab")}
               >
                 <Text style={styles.seeAll}>Ver todas</Text>
               </TouchableOpacity>
