@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Animated,
   SafeAreaView,
   Text,
   StyleSheet,
@@ -30,6 +31,25 @@ function DonutChart({ categories }: { categories: CategoryTotal[] }) {
   const RADIUS = (SIZE - STROKE) / 2;
   const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 40,
+        friction: 7,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   if (total <= 0) {
     return (
       <View style={donutStyles.container}>
@@ -49,7 +69,15 @@ function DonutChart({ categories }: { categories: CategoryTotal[] }) {
   let accumulatedPercent = 0;
 
   return (
-    <View style={donutStyles.container}>
+    <Animated.View
+      style={[
+        donutStyles.container,
+        {
+          opacity: opacityAnim,
+          transform: [{ scale: scaleAnim }],
+        },
+      ]}
+    >
       <View style={{ width: SIZE, height: SIZE }}>
         <Svg width={SIZE} height={SIZE}>
           <G rotation="-90" origin={`${SIZE / 2}, ${SIZE / 2}`}>
@@ -104,7 +132,7 @@ function DonutChart({ categories }: { categories: CategoryTotal[] }) {
           <Text style={donutStyles.centerValue}>{formatCurrency(total)}</Text>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -148,6 +176,40 @@ function BarChart({
   const maxValue = Math.max(...data.flatMap((d) => [d.income, d.expense]));
   const BAR_HEIGHT = 120;
 
+  const getHeight = (value: number) =>
+    maxValue > 0 ? (value / maxValue) * BAR_HEIGHT : 0;
+
+  const [animValues] = useState(() =>
+    data.map(() => ({
+      income: new Animated.Value(0),
+      expense: new Animated.Value(0),
+    })),
+  );
+
+  useEffect(() => {
+    const animations = animValues.flatMap((v, i) => {
+      const targetIncome = getHeight(data[i]?.income ?? 0);
+      const targetExpense = getHeight(data[i]?.expense ?? 0);
+
+      return [
+        Animated.spring(v.income, {
+          toValue: targetIncome,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: false,
+        }),
+        Animated.spring(v.expense, {
+          toValue: targetExpense,
+          tension: 50,
+          friction: 8,
+          useNativeDriver: false,
+        }),
+      ];
+    });
+
+    Animated.stagger(70, animations).start();
+  }, [data]);
+
   return (
     <View style={barStyles.container}>
       <View style={barStyles.chart}>
@@ -155,28 +217,22 @@ function BarChart({
           <View key={i} style={barStyles.group}>
             <View style={barStyles.bars}>
               <View style={barStyles.barWrapper}>
-                <View
+                <Animated.View
                   style={[
                     barStyles.bar,
                     {
-                      height:
-                        maxValue > 0
-                          ? (item.income / maxValue) * BAR_HEIGHT
-                          : 0,
+                      height: animValues[i]?.income ?? 0,
                       backgroundColor: "#3B82F6",
                     },
                   ]}
                 />
               </View>
               <View style={barStyles.barWrapper}>
-                <View
+                <Animated.View
                   style={[
                     barStyles.bar,
                     {
-                      height:
-                        maxValue > 0
-                          ? (item.expense / maxValue) * BAR_HEIGHT
-                          : 0,
+                      height: animValues[i]?.expense ?? 0,
                       backgroundColor: "#F59E0B",
                     },
                   ]}
@@ -214,7 +270,7 @@ const barStyles = StyleSheet.create({
   group: { alignItems: "center", flex: 1 },
   bars: { flexDirection: "row", alignItems: "flex-end", gap: 2 },
   barWrapper: { alignItems: "center", justifyContent: "flex-end", height: 120 },
-  bar: { width: 8, borderRadius: 4, minHeight: 4 },
+  bar: { width: 8, borderRadius: 4 },
   label: { fontSize: 9, color: "#475569", marginTop: 6 },
   legend: {
     flexDirection: "row",
