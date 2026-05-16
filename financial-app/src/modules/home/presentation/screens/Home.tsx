@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { getCategoryIcon } from "../../../../core/utils";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../../core/@types/navigation";
 import { useHomeDashboard } from "../../state/useHomeDashboard";
@@ -193,20 +194,6 @@ export default function Home() {
       />
     </SafeAreaView>
   );
-}
-
-function getCategoryIcon(title: string): any {
-  const t = title.toLowerCase();
-  if (t.includes("mercado") || t.includes("supermercado"))
-    return "cart-outline";
-  if (t.includes("uber") || t.includes("taxi")) return "car-outline";
-  if (t.includes("netflix") || t.includes("spotify"))
-    return "play-circle-outline";
-  if (t.includes("ifood") || t.includes("restaurante"))
-    return "fast-food-outline";
-  if (t.includes("farmácia") || t.includes("farmacia")) return "medkit-outline";
-  if (t.includes("ginásio") || t.includes("academia")) return "barbell-outline";
-  return "receipt-outline";
 }
 
 function formatTransactionDate(date: Date): string {

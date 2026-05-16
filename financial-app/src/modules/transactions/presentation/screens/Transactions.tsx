@@ -22,96 +22,21 @@ import { Ionicons } from "@expo/vector-icons";
 import { z } from "zod";
 import { useTransactions } from "../../../../app/providers/TransactionProviders";
 import type { Transaction } from "../../../../core/@types/transaction";
+import {
+  FilterPeriod,
+  formatDateInput,
+  getCategoryIcon,
+  getStartOfToday,
+  getStartOfWeek,
+  groupByDate,
+  isValidDateString,
+  maskCurrencyInput,
+  maskDate,
+  parseCurrencyInput,
+  parseDate,
+} from "../../../../core/utils";
 
-type FilterPeriod = "Dia" | "Semana" | "Mês" | "Todos";
-
-function parseCurrencyInput(value: string) {
-  return Number(value.replace(/\./g, "").replace(",", "."));
-}
-
-function maskCurrencyInput(value: string) {
-  const digits = value.replace(/\D/g, "");
-
-  if (!digits) return "";
-
-  const number = Number(digits) / 100;
-
-  return number.toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  });
-}
-
-function maskDate(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 8);
-
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
-
-function parseDate(value?: string) {
-  if (!value?.trim()) return new Date();
-
-  const [day, month, year] = value.split("/").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-function formatDateLabel(date: Date) {
-  return new Date(date).toLocaleDateString("pt-BR");
-}
-
-function formatDateInput(date: Date) {
-  const d = new Date(date);
-  return d.toLocaleDateString("pt-BR");
-}
-
-function isValidDateString(value: string) {
-  if (!/^\d{2}\/\d{2}\/\d{4}$/.test(value)) return false;
-
-  const [day, month, year] = value.split("/").map(Number);
-  const parsed = new Date(year, month - 1, day);
-
-  return (
-    parsed.getFullYear() === year &&
-    parsed.getMonth() === month - 1 &&
-    parsed.getDate() === day
-  );
-}
-
-function getStartOfToday() {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
-
-function getStartOfWeek() {
-  const now = new Date();
-  const day = now.getDay();
-  const diff = day === 0 ? 6 : day - 1;
-
-  const start = new Date(now);
-  start.setDate(now.getDate() - diff);
-  start.setHours(0, 0, 0, 0);
-
-  return start;
-}
-
-function groupByDate(transactions: Transaction[]) {
-  const groups: Record<string, Transaction[]> = {};
-
-  transactions.forEach((transaction) => {
-    const label = formatDateLabel(transaction.date);
-
-    if (!groups[label]) {
-      groups[label] = [];
-    }
-
-    groups[label].push(transaction);
-  });
-
-  return Object.entries(groups).map(([title, data]) => ({ title, data }));
-}
+const PERIODS: FilterPeriod[] = ["Dia", "Semana", "Mês", "Todos"];
 
 const editTransactionSchema = z.object({
   title: z.string().trim().min(1, "Informe a categoria"),
@@ -169,8 +94,6 @@ export default function Transactions() {
   const [editDescription, setEditDescription] = useState("");
   const [editErrors, setEditErrors] = useState<EditFormErrors>({});
   const [editLoading, setEditLoading] = useState(false);
-
-  const PERIODS: FilterPeriod[] = ["Dia", "Semana", "Mês", "Todos"];
 
   const periodFilteredTransactions = useMemo(() => {
     const today = getStartOfToday();
@@ -766,22 +689,6 @@ export default function Transactions() {
       </Modal>
     </SafeAreaView>
   );
-}
-
-function getCategoryIcon(title: string): any {
-  const t = title.toLowerCase();
-  if (t.includes("mercado") || t.includes("supermercado"))
-    return "cart-outline";
-  if (t.includes("uber") || t.includes("taxi") || t.includes("transport"))
-    return "car-outline";
-  if (t.includes("netflix") || t.includes("spotify") || t.includes("stream"))
-    return "play-circle-outline";
-  if (t.includes("ifood") || t.includes("restaurante") || t.includes("food"))
-    return "fast-food-outline";
-  if (t.includes("farmácia") || t.includes("farmacia") || t.includes("saúde"))
-    return "medkit-outline";
-  if (t.includes("ginásio") || t.includes("academia")) return "barbell-outline";
-  return "receipt-outline";
 }
 
 const styles = StyleSheet.create({

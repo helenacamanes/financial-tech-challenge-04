@@ -17,7 +17,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { z } from "zod";
 import { useGoals } from "../../state/goals.store";
-import { Goal } from "@/shared/services/goals/goalsService";
+import { Goal } from "../../domain/entities/Goal";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
