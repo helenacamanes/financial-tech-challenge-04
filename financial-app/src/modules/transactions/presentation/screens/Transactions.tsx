@@ -39,7 +39,7 @@ import {
 const PERIODS: FilterPeriod[] = ["Dia", "Semana", "Mês", "Todos"];
 
 const editTransactionSchema = z.object({
-  title: z.string().trim().min(1, "Informe a categoria"),
+  title: z.string().trim().min(1, "Informe a categoria").max(120, "Título muito longo"),
   value: z
     .string()
     .trim()
@@ -56,7 +56,7 @@ const editTransactionSchema = z.object({
       (value) => isValidDateString(value),
       "Data inválida. Use DD/MM/AAAA",
     ),
-  description: z.string().optional(),
+  description: z.string().max(500).optional(),
 });
 
 type EditFormErrors = {
@@ -261,7 +261,13 @@ export default function Transactions() {
     if (!selectedTransaction?.attachment?.url) return;
 
     try {
-      await Linking.openURL(selectedTransaction.attachment.url);
+      const url = selectedTransaction.attachment.url;
+      const parsed = new URL(url);
+      if (parsed.protocol !== "https:") {
+        Alert.alert("Erro", "URL inválida.");
+        return;
+      }
+      await Linking.openURL(url);
     } catch (error) {
       console.error("Erro ao abrir anexo:", error);
       Alert.alert("Erro", "Não foi possível abrir o anexo.");

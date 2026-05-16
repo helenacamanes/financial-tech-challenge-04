@@ -22,7 +22,7 @@ const schema = z
     currentPassword: z.string().min(1, "Informe sua senha atual"),
     newPassword: z
       .string()
-      .min(6, "A nova senha deve ter pelo menos 6 caracteres"),
+      .min(8, "A nova senha deve ter pelo menos 8 caracteres"),
     confirmPassword: z.string().min(1, "Confirme a nova senha"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

@@ -73,8 +73,8 @@ const schema = z.object({
         date.getDate() === day
       );
     }, "Data inválida. Use DD/MM/AAAA"),
-  description: z.string().optional(),
-  account: z.string().optional(),
+  description: z.string().max(500).optional(),
+  account: z.string().max(100).optional(),
 });
 
 function maskDate(value: string) {
