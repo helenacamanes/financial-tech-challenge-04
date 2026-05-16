@@ -17,7 +17,7 @@ import {
 } from "@/infra/di/container";
 
 import { useAuthState }
-  from "@/modules/auth/state/auth.store";
+  from "@/modules/auth";
 import { MemoryCache }
   from "@/core/cache/memoryCache";
 

@@ -9,10 +9,10 @@ import {
   getTransactionsInDateRangeUseCase,
 } from "@/infra/di/container";
 import { useAuthState }
-  from "@/modules/auth/state/auth.store";
+  from "@/modules/auth";
 
-import { Transaction }
-  from "@/modules/transactions/domain/entities/Transaction";
+import type { Transaction }
+  from "@/modules/transactions";
 
 function getMonthRange() {
   const now = new Date();

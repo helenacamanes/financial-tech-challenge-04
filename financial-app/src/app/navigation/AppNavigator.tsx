@@ -3,8 +3,8 @@ import { View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../core/@types/navigation";
-import { useAuthState } from "../../modules/auth/state/auth.store";
-import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
+import { useAuthState } from "../../modules/auth";
+import { useOnboardingState } from "../../modules/onboarding";
 
 import {
   getAddTransactionScreen,

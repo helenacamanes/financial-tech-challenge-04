@@ -1,8 +1,8 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 
-import { Transaction }
-  from "@/modules/transactions/domain/entities/Transaction";
+import type { Transaction }
+  from "@/modules/transactions";
 
 export class ExpoPdfReportDatasource {
   async exportMonthlyReport(

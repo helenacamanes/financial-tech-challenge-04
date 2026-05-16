@@ -4,7 +4,7 @@ import { LoadingScreen } from "@/presentation/screens/loading/LoadingScreen";
 
 import { useAuthState } from "../providers/AuthProviders";
 
-import { useOnboardingState } from "../../modules/onboarding/state/onboarding.store";
+import { useOnboardingState } from "../../modules/onboarding";
 
 import { AppRoutes } from "./AppRoutes";
 import { AuthNavigator } from "./AuthNavigator";

@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { RootStackParamList } from "../../../../core/@types/navigation";
-import { registerSchema, RegisterFormData } from "../../../auth/schemas/registerSchema";
+import { registerSchema, RegisterFormData } from "../../../auth";
 import { FormField } from "../../../../shared/components/ui/FormField";
 import { CheckboxField } from "../../../../shared/components/ui/CheckboxField";
 import { Button } from "../../../../shared/components/ui/Buttons";

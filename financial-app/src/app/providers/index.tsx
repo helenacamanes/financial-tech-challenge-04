@@ -15,7 +15,7 @@ import { NotificationProvider }
   from "./NotificationProviders";
 
 import { OnboardingStoreProvider }
-  from "../../modules/onboarding/state/onboarding.store";
+  from "../../modules/onboarding";
 
 export function AppProviders({
   children,

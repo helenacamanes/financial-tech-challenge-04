@@ -1,9 +1,9 @@
-import { User }
-  from "@/modules/auth/domain/entities/User";
-import { Goal }
-  from "@/modules/goals/domain/entities/Goal";
-import { Transaction }
-  from "@/modules/transactions/domain/entities/Transaction";
+import type { User }
+  from "@/modules/auth";
+import type { Goal }
+  from "@/modules/goals";
+import type { Transaction }
+  from "@/modules/transactions";
 
 import { ProfileSummary }
   from "../entities/ProfileSummary";

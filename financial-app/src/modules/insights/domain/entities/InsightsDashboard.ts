@@ -1,5 +1,5 @@
-import { Transaction }
-  from "@/modules/transactions/domain/entities/Transaction";
+import type { Transaction }
+  from "@/modules/transactions";
 
 export type CategoryTotal = {
   label: string;

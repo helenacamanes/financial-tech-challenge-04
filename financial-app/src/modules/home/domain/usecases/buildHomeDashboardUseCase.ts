@@ -1,7 +1,7 @@
-import { User }
-  from "@/modules/auth/domain/entities/User";
-import { Transaction }
-  from "@/modules/transactions/domain/entities/Transaction";
+import type { User }
+  from "@/modules/auth";
+import type { Transaction }
+  from "@/modules/transactions";
 
 import { HomeDashboard }
   from "../entities/HomeDashboard";

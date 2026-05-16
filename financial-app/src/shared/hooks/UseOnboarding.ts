@@ -1,5 +1,5 @@
 import { useOnboardingStore }
-  from "../../modules/onboarding/state/onboarding.store";
+  from "../../modules/onboarding";
 
 export function useOnboarding() {
   const {

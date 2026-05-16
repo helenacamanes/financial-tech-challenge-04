@@ -3,11 +3,11 @@ import { useMemo } from "react";
 import { buildProfileSummaryUseCase }
   from "@/infra/di/container";
 import { useAuthState }
-  from "@/modules/auth/state/auth.store";
+  from "@/modules/auth";
 import { useGoalsState }
-  from "@/modules/goals/state/goals.store";
+  from "@/modules/goals";
 import { useTransactionsState }
-  from "@/modules/transactions/state/transactions.store";
+  from "@/modules/transactions";
 
 export function useProfileSummary() {
   const { user } = useAuthState();
