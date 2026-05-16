@@ -8,9 +8,6 @@ import React, {
   useReducer,
 } from "react";
 
-import { Text, View }
-  from "react-native";
-
 import {
   changePasswordUseCase,
   loginUseCase,
@@ -318,23 +315,6 @@ export function AuthStoreProvider({
       clearError,
     ],
   );
-
-  if (state.initializing) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#0A1128",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Text style={{ color: "#fff" }}>
-          Loading auth...
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <AuthStateContext.Provider value={stateValue}>

@@ -38,7 +38,7 @@ export const getHomeScreen = () =>
   require("../../modules/home/presentation/screens/Home").default;
 
 export const getAddTransactionScreen = () =>
-  require("../../modules/auth/presentation/screens/AddTransaction").default;
+  require("../../modules/transactions/presentation/screens/AddTransaction").default;
 
 export const getTransactionsScreen = () =>
   require("../../modules/transactions/presentation/screens/Transactions").default;
