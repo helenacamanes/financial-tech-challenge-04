@@ -3,12 +3,22 @@ type CacheEntry<T> = {
   updatedAt: number;
 };
 
+const instances: MemoryCache<unknown>[] = [];
+
+export function clearAllCaches() {
+  for (const instance of instances) {
+    instance.clear();
+  }
+}
+
 export class MemoryCache<T> {
   private entries = new Map<string, CacheEntry<T>>();
 
   constructor(
     private ttlMs = 1000 * 60 * 5,
-  ) {}
+  ) {
+    instances.push(this);
+  }
 
   get(
     key: string,

@@ -17,6 +17,8 @@ import {
   resetPasswordUseCase,
 } from "@/infra/di/container";
 
+import { clearAllCaches }
+  from "@/core/cache/memoryCache";
 import { User }
   from "../domain/entities/User";
 
@@ -241,6 +243,7 @@ export function AuthStoreProvider({
 
       try {
         await logoutUseCase.execute();
+        clearAllCaches();
 
         dispatch({
           type: "AUTH_CHANGED",
