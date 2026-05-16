@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState }
+import { useCallback, useMemo, useState }
   from "react";
+import { useFocusEffect }
+  from "@react-navigation/native";
 
 import {
   buildHomeDashboardUseCase,
@@ -33,16 +35,18 @@ export function useHomeDashboard() {
   const [transactions, setTransactions]
     = useState<Transaction[]>([]);
 
-  useEffect(() => {
-    if (!user?.uid) return;
+  useFocusEffect(
+    useCallback(() => {
+      if (!user?.uid) return;
 
-    const { start, end } = getMonthRange();
+      const { start, end } = getMonthRange();
 
-    getTransactionsInDateRangeUseCase.execute(
-      start,
-      end,
-    ).then(setTransactions);
-  }, [user?.uid]);
+      getTransactionsInDateRangeUseCase.execute(
+        start,
+        end,
+      ).then(setTransactions);
+    }, [user?.uid]),
+  );
 
   const dashboard = useMemo(
     () =>
