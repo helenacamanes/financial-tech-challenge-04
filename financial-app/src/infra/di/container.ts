@@ -31,9 +31,6 @@ import { GoalsRepositoryImpl }
 import { CreateGoalUseCase }
   from "@/modules/goals/domain/usecases/createGoalsUseCase";
 
-import { GetGoalsUseCase }
-  from "@/modules/goals/domain/usecases/getGoalsUseCase";
-
 import { UpdateGoalUseCase }
   from "@/modules/goals/domain/usecases/updateGoalUseCase";
 
@@ -48,9 +45,6 @@ import { FirebaseTransactionsDatasource }
 
 import { TransactionsRepositoryImpl }
   from "@/modules/transactions/infra/repositories/TransactionsRepositoryImpl";
-
-import { SubscribeToTransactionsUseCase }
-  from "@/modules/transactions/domain/usecases/subscribeToTransactionsUseCase";
 
 import { CreateTransactionUseCase }
   from "@/modules/transactions/domain/usecases/createTransactionUseCase";
@@ -151,11 +145,6 @@ export const createGoalUseCase =
     goalsRepository,
   );
 
-export const getGoalsUseCase =
-  new GetGoalsUseCase(
-    goalsRepository,
-  );
-
 export const updateGoalUseCase =
   new UpdateGoalUseCase(
     goalsRepository,
@@ -177,11 +166,6 @@ const transactionsDatasource =
 const transactionsRepository =
   new TransactionsRepositoryImpl(
     transactionsDatasource,
-  );
-
-export const subscribeToTransactionsUseCase =
-  new SubscribeToTransactionsUseCase(
-    transactionsRepository,
   );
 
 export const createTransactionUseCase =
