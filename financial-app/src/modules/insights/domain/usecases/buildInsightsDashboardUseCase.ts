@@ -10,19 +10,19 @@ const CATEGORY_COLORS: Record<
   string,
   { color: string; icon: string }
 > = {
-  Mercado: { color: "#3B82F6", icon: "cart-outline" },
-  Transporte: { color: "#8B5CF6", icon: "car-outline" },
-  Moradia: { color: "#F97316", icon: "home-outline" },
-  Alimentação: { color: "#F59E0B", icon: "fast-food-outline" },
-  Lazer: { color: "#10B981", icon: "game-controller-outline" },
-  Tecnologia: { color: "#06B6D4", icon: "laptop-outline" },
-  Saúde: { color: "#EF4444", icon: "medkit-outline" },
-  Educação: { color: "#6366F1", icon: "school-outline" },
+  Mercado: { color: "#2563EB", icon: "cart-outline" },
+  Transporte: { color: "#7C3AED", icon: "car-outline" },
+  Moradia: { color: "#EA580C", icon: "home-outline" },
+  Alimentação: { color: "#CA8A04", icon: "fast-food-outline" },
+  Lazer: { color: "#16A34A", icon: "game-controller-outline" },
+  Tecnologia: { color: "#0891B2", icon: "laptop-outline" },
+  Saúde: { color: "#DC2626", icon: "medkit-outline" },
+  Educação: { color: "#4F46E5", icon: "school-outline" },
   Salário: { color: "#22C55E", icon: "cash-outline" },
-  Assinaturas: { color: "#EC4899", icon: "repeat-outline" },
-  Pets: { color: "#F43F5E", icon: "paw-outline" },
-  Viagem: { color: "#14B8A6", icon: "airplane-outline" },
-  Outros: { color: "#A855F7", icon: "ellipsis-horizontal-outline" },
+  Assinaturas: { color: "#DB2777", icon: "repeat-outline" },
+  Pets: { color: "#65A30D", icon: "paw-outline" },
+  Viagem: { color: "#0D9488", icon: "airplane-outline" },
+  Outros: { color: "#78716C", icon: "ellipsis-horizontal-outline" },
 };
 
 const MONTHS = [

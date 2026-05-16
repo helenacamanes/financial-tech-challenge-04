@@ -11,162 +11,16 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import Svg, { Circle, G } from "react-native-svg";
-import { CategoryTotal }
-  from "../../domain/entities/InsightsDashboard";
 import { useInsightsDashboard }
   from "../../state/useInsightsDashboard";
+import { DonutChart }
+  from "../components/DonutChart";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
   }).format(value);
-
-function DonutChart({ categories }: { categories: CategoryTotal[] }) {
-  const total = categories.reduce((acc, c) => acc + c.value, 0);
-
-  const SIZE = 160;
-  const STROKE = 22;
-  const RADIUS = (SIZE - STROKE) / 2;
-  const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-  const scaleAnim = useRef(new Animated.Value(0)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, {
-        toValue: 1,
-        tension: 40,
-        friction: 7,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 500,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
-  if (total <= 0) {
-    return (
-      <View style={donutStyles.container}>
-        <View
-          style={[
-            donutStyles.centerFallback,
-            { width: SIZE, height: SIZE, borderRadius: SIZE / 2 },
-          ]}
-        >
-          <Text style={donutStyles.centerLabel}>Total</Text>
-          <Text style={donutStyles.centerValue}>{formatCurrency(0)}</Text>
-        </View>
-      </View>
-    );
-  }
-
-  let accumulatedPercent = 0;
-
-  return (
-    <Animated.View
-      style={[
-        donutStyles.container,
-        {
-          opacity: opacityAnim,
-          transform: [{ scale: scaleAnim }],
-        },
-      ]}
-    >
-      <View style={{ width: SIZE, height: SIZE }}>
-        <Svg width={SIZE} height={SIZE}>
-          <G rotation="-90" origin={`${SIZE / 2}, ${SIZE / 2}`}>
-            <Circle
-              cx={SIZE / 2}
-              cy={SIZE / 2}
-              r={RADIUS}
-              stroke="#334155"
-              strokeWidth={STROKE}
-              fill="none"
-            />
-
-            {categories.map((cat) => {
-              const percent = cat.value / total;
-              const dash = percent * CIRCUMFERENCE;
-              const gapAdjustedDash = Math.max(dash - 3, 0);
-              const offset = CIRCUMFERENCE * (1 - accumulatedPercent);
-
-              accumulatedPercent += percent;
-
-              return (
-                <Circle
-                  key={cat.label}
-                  cx={SIZE / 2}
-                  cy={SIZE / 2}
-                  r={RADIUS}
-                  stroke={cat.color}
-                  strokeWidth={STROKE}
-                  fill="none"
-                  strokeLinecap="butt"
-                  strokeDasharray={`${gapAdjustedDash} ${CIRCUMFERENCE}`}
-                  strokeDashoffset={offset}
-                />
-              );
-            })}
-          </G>
-        </Svg>
-
-        <View
-          style={[
-            donutStyles.center,
-            {
-              width: SIZE - STROKE * 2,
-              height: SIZE - STROKE * 2,
-              borderRadius: (SIZE - STROKE * 2) / 2,
-              top: STROKE,
-              left: STROKE,
-            },
-          ]}
-        >
-          <Text style={donutStyles.centerLabel}>Total</Text>
-          <Text style={donutStyles.centerValue}>{formatCurrency(total)}</Text>
-        </View>
-      </View>
-    </Animated.View>
-  );
-}
-
-const donutStyles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  center: {
-    position: "absolute",
-    backgroundColor: "#0F172A",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  centerFallback: {
-    backgroundColor: "#1E293B",
-    borderWidth: 22,
-    borderColor: "#334155",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  centerLabel: {
-    fontSize: 11,
-    color: "#64748B",
-    marginBottom: 2,
-  },
-  centerValue: {
-    fontSize: 13,
-    fontWeight: "800",
-    color: "#F1F5F9",
-    textAlign: "center",
-    paddingHorizontal: 12,
-  },
-});
 
 function BarChart({
   data,
