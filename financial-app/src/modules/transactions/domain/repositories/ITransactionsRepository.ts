@@ -23,10 +23,30 @@ export type UpdateTransactionInput = {
   account?: string;
 };
 
+export type PaginationCursor = {
+  lastDate: number;
+};
+
+export type PaginatedResult<T> = {
+  data: T[];
+  cursor: PaginationCursor | null;
+  hasMore: boolean;
+};
+
 export interface ITransactionsRepository {
   subscribeToTransactions(
     callback: (transactions: Transaction[]) => void,
   ): () => void;
+
+  getTransactionsInDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Transaction[]>;
+
+  getTransactionsPaginated(
+    limit: number,
+    cursor?: PaginationCursor | null,
+  ): Promise<PaginatedResult<Transaction>>;
 
   createTransaction(
     transaction: CreateTransactionInput,

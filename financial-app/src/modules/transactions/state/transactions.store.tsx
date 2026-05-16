@@ -12,22 +12,23 @@ import React, {
 import {
   createTransactionUseCase,
   deleteTransactionUseCase,
-  subscribeToTransactionsUseCase,
+  getTransactionsUseCase,
   updateTransactionUseCase,
 } from "@/infra/di/container";
 
 import { useAuthState }
   from "@/modules/auth/state/auth.store";
-import { MemoryCache }
-  from "@/core/cache/memoryCache";
 
 import { Transaction }
   from "../domain/entities/Transaction";
 
 import {
   CreateTransactionInput,
+  PaginationCursor,
   UpdateTransactionInput,
 } from "../domain/repositories/ITransactionsRepository";
+
+const PAGE_SIZE = 20;
 
 type TransactionsStatus =
   | "idle"
@@ -40,7 +41,9 @@ type TransactionsState = {
   status: TransactionsStatus;
   error: string | null;
   lastUpdated: number | null;
-  source: "empty" | "cache" | "network";
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  refreshing: boolean;
 };
 
 type TransactionsAction =
@@ -48,12 +51,16 @@ type TransactionsAction =
   | {
       type: "TRANSACTIONS_LOADED";
       payload: Transaction[];
-      source: "cache" | "network";
+      hasMore: boolean;
       updatedAt?: number;
     }
-  | { type: "TRANSACTIONS_ERROR"; payload: string };
+  | { type: "TRANSACTIONS_APPENDED"; payload: Transaction[]; hasMore: boolean }
+  | { type: "TRANSACTIONS_ERROR"; payload: string }
+  | { type: "TRANSACTIONS_REFRESHING" }
+  | { type: "TRANSACTIONS_LOADING_MORE" }
+  | { type: "TRANSACTIONS_CLEAR" };
 
-type TransactionContextData = TransactionsState & {
+type TransactionActionsContextData = {
   addTransaction: (
     transaction: CreateTransactionInput,
   ) => Promise<void>;
@@ -64,12 +71,9 @@ type TransactionContextData = TransactionsState & {
   removeTransaction: (
     id: string,
   ) => Promise<void>;
+  loadMore: () => Promise<void>;
+  refresh: () => Promise<void>;
 };
-
-type TransactionActionsContextData = Omit<
-  TransactionContextData,
-  keyof TransactionsState
->;
 
 const TransactionStateContext =
   createContext<TransactionsState | null>(null);
@@ -82,11 +86,10 @@ const initialState: TransactionsState = {
   status: "idle",
   error: null,
   lastUpdated: null,
-  source: "empty",
+  hasMore: true,
+  isLoadingMore: false,
+  refreshing: false,
 };
-
-const transactionsCache =
-  new MemoryCache<Transaction[]>();
 
 function transactionsReducer(
   state: TransactionsState,
@@ -96,29 +99,62 @@ function transactionsReducer(
     case "TRANSACTIONS_LOADING":
       return {
         ...state,
-        status:
-          state.transactions.length > 0
-            ? "success"
-            : "loading",
+        status: "loading",
         error: null,
+        refreshing: false,
       };
 
     case "TRANSACTIONS_LOADED":
       return {
+        ...state,
         transactions: action.payload,
         status: "success",
         error: null,
         lastUpdated:
           action.updatedAt ?? Date.now(),
-        source: action.source,
+        hasMore: action.hasMore,
+        isLoadingMore: false,
+        refreshing: false,
+      };
+
+    case "TRANSACTIONS_APPENDED":
+      return {
+        ...state,
+        transactions: [
+          ...state.transactions,
+          ...action.payload,
+        ],
+        status: "success",
+        hasMore: action.hasMore,
+        isLoadingMore: false,
       };
 
     case "TRANSACTIONS_ERROR":
       return {
         ...state,
-        status: "error",
+        status: state.transactions.length > 0
+          ? "success"
+          : "error",
         error: action.payload,
+        isLoadingMore: false,
+        refreshing: false,
       };
+
+    case "TRANSACTIONS_REFRESHING":
+      return {
+        ...state,
+        refreshing: true,
+        error: null,
+      };
+
+    case "TRANSACTIONS_LOADING_MORE":
+      return {
+        ...state,
+        isLoadingMore: true,
+      };
+
+    case "TRANSACTIONS_CLEAR":
+      return { ...initialState };
 
     default:
       return state;
@@ -132,6 +168,8 @@ function getErrorMessage(
     ? error.message
     : "Não foi possível carregar as transações.";
 }
+
+let paginationCursorRef: PaginationCursor | null = null;
 
 export function TransactionsStoreProvider({
   children,
@@ -152,57 +190,61 @@ export function TransactionsStoreProvider({
 
   useEffect(() => {
     if (!user?.uid) {
-      dispatch({
-        type: "TRANSACTIONS_LOADED",
-        payload: [],
-        source: "network",
-      });
+      dispatch({ type: "TRANSACTIONS_CLEAR" });
       return;
     }
 
-    const cacheKey =
-      `transactions:${user.uid}`;
-    const cached =
-      transactionsCache.get(cacheKey);
+    paginationCursorRef = null;
+    loadPage();
 
-    if (cached) {
-      dispatch({
-        type: "TRANSACTIONS_LOADED",
-        payload: cached.value,
-        source: "cache",
-        updatedAt: cached.updatedAt,
-      });
+    async function loadPage() {
+      dispatch({ type: "TRANSACTIONS_LOADING" });
+
+      try {
+        const result =
+          await getTransactionsUseCase.execute(
+            PAGE_SIZE,
+          );
+
+        paginationCursorRef = result.cursor;
+
+        dispatch({
+          type: "TRANSACTIONS_LOADED",
+          payload: result.data,
+          hasMore: result.hasMore,
+        });
+      } catch (error) {
+        dispatch({
+          type: "TRANSACTIONS_ERROR",
+          payload: getErrorMessage(error),
+        });
+      }
     }
+  }, [user?.uid]);
 
+  async function loadPage() {
     dispatch({ type: "TRANSACTIONS_LOADING" });
 
     try {
-      const unsubscribe =
-        subscribeToTransactionsUseCase.execute(
-          (transactions) => {
-            transactionsCache.set(
-              cacheKey,
-              transactions,
-            );
-
-            dispatch({
-              type: "TRANSACTIONS_LOADED",
-              payload: transactions,
-              source: "network",
-            });
-          },
+      const result =
+        await getTransactionsUseCase.execute(
+          PAGE_SIZE,
         );
 
-      return () => {
-        unsubscribe?.();
-      };
+      paginationCursorRef = result.cursor;
+
+      dispatch({
+        type: "TRANSACTIONS_LOADED",
+        payload: result.data,
+        hasMore: result.hasMore,
+      });
     } catch (error) {
       dispatch({
         type: "TRANSACTIONS_ERROR",
         payload: getErrorMessage(error),
       });
     }
-  }, [user?.uid]);
+  }
 
   const addTransaction = useCallback(
     async (
@@ -211,6 +253,7 @@ export function TransactionsStoreProvider({
       await createTransactionUseCase.execute(
         transaction,
       );
+      await loadPage();
     },
     [],
   );
@@ -241,6 +284,7 @@ export function TransactionsStoreProvider({
         payload,
         currentTransaction,
       );
+      await loadPage();
     },
     [],
   );
@@ -259,6 +303,77 @@ export function TransactionsStoreProvider({
       await deleteTransactionUseCase.execute(
         transaction,
       );
+      await loadPage();
+    },
+    [],
+  );
+
+  const loadMore = useCallback(
+    async () => {
+      if (
+        state.isLoadingMore ||
+        !state.hasMore ||
+        !paginationCursorRef
+      ) {
+        return;
+      }
+
+      dispatch({
+        type: "TRANSACTIONS_LOADING_MORE",
+      });
+
+      try {
+        const result =
+          await getTransactionsUseCase.execute(
+            PAGE_SIZE,
+            paginationCursorRef,
+          );
+
+        paginationCursorRef = result.cursor;
+
+        dispatch({
+          type: "TRANSACTIONS_APPENDED",
+          payload: result.data,
+          hasMore: result.hasMore,
+        });
+      } catch (_error) {
+        dispatch({
+          type: "TRANSACTIONS_ERROR",
+          payload: "Erro ao carregar mais transações.",
+        });
+      }
+    },
+    [
+      state.isLoadingMore,
+      state.hasMore,
+    ],
+  );
+
+  const refresh = useCallback(
+    async () => {
+      dispatch({ type: "TRANSACTIONS_REFRESHING" });
+
+      paginationCursorRef = null;
+
+      try {
+        const result =
+          await getTransactionsUseCase.execute(
+            PAGE_SIZE,
+          );
+
+        paginationCursorRef = result.cursor;
+
+        dispatch({
+          type: "TRANSACTIONS_LOADED",
+          payload: result.data,
+          hasMore: result.hasMore,
+        });
+      } catch (error) {
+        dispatch({
+          type: "TRANSACTIONS_ERROR",
+          payload: getErrorMessage(error),
+        });
+      }
     },
     [],
   );
@@ -268,11 +383,15 @@ export function TransactionsStoreProvider({
       addTransaction,
       updateTransaction,
       removeTransaction,
+      loadMore,
+      refresh,
     }),
     [
       addTransaction,
       updateTransaction,
       removeTransaction,
+      loadMore,
+      refresh,
     ],
   );
 

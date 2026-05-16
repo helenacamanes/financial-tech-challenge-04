@@ -61,6 +61,12 @@ import { UpdateTransactionUseCase }
 import { DeleteTransactionUseCase }
   from "@/modules/transactions/domain/usecases/deleteTransactionUseCase";
 
+import { GetTransactionsUseCase }
+  from "@/modules/transactions/domain/usecases/getTransactionsUseCase";
+
+import { GetTransactionsInDateRangeUseCase }
+  from "@/modules/transactions/domain/usecases/getTransactionsInDateRangeUseCase";
+
 import { AsyncStorageOnboardingDatasource }
   from "@/modules/onboarding/infra/datasources/AsyncStorageOnboardingDatasource";
 
@@ -190,6 +196,16 @@ export const updateTransactionUseCase =
 
 export const deleteTransactionUseCase =
   new DeleteTransactionUseCase(
+    transactionsRepository,
+  );
+
+export const getTransactionsUseCase =
+  new GetTransactionsUseCase(
+    transactionsRepository,
+  );
+
+export const getTransactionsInDateRangeUseCase =
+  new GetTransactionsInDateRangeUseCase(
     transactionsRepository,
   );
 

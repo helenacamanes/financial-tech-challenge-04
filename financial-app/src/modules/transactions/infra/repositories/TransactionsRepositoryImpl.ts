@@ -4,6 +4,7 @@ import { Transaction }
 import {
   CreateTransactionInput,
   ITransactionsRepository,
+  PaginatedResult,
   UpdateTransactionInput,
 } from "../../domain/repositories/ITransactionsRepository";
 
@@ -23,6 +24,26 @@ export class TransactionsRepositoryImpl
   ) {
     return this.datasource.subscribeToTransactions(
       callback,
+    );
+  }
+
+  async getTransactionsInDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Transaction[]> {
+    return this.datasource.getTransactionsInDateRange(
+      startDate,
+      endDate,
+    );
+  }
+
+  async getTransactionsPaginated(
+    pageLimit: number,
+    cursor?: { lastDate: number } | null,
+  ): Promise<PaginatedResult<Transaction>> {
+    return this.datasource.getTransactionsPaginated(
+      pageLimit,
+      cursor,
     );
   }
 

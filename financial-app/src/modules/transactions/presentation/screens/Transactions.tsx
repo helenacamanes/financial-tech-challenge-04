@@ -1,8 +1,10 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
+  ActivityIndicator,
   SafeAreaView,
   Text,
   FlatList,
+  RefreshControl,
   StyleSheet,
   View,
   TouchableOpacity,
@@ -140,8 +142,17 @@ type EditFormErrors = {
 };
 
 export default function Transactions() {
-  const { transactions, removeTransaction, updateTransaction } =
-    useTransactions();
+  const {
+    transactions,
+    status,
+    hasMore,
+    isLoadingMore,
+    refreshing,
+    removeTransaction,
+    updateTransaction,
+    loadMore,
+    refresh,
+  } = useTransactions();
   const navigation = useNavigation();
 
   const [search, setSearch] = useState("");
@@ -415,11 +426,40 @@ export default function Transactions() {
         </View>
       </View>
 
+      {status === "loading" ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#2563EB" />
+          <Text style={styles.loadingText}>Carregando transações...</Text>
+        </View>
+      ) : (
       <FlatList
         data={grouped}
         keyExtractor={(item) => item.title}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={refresh}
+            tintColor="#2563EB"
+            colors={["#2563EB"]}
+            progressBackgroundColor="#1E293B"
+          />
+        }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={styles.footerLoader}>
+              <ActivityIndicator size="small" color="#64748B" />
+              <Text style={styles.footerText}>Carregando mais...</Text>
+            </View>
+          ) : !hasMore && transactions.length > 0 ? (
+            <View style={styles.footerLoader}>
+              <Text style={styles.footerText}>Todas as transações carregadas</Text>
+            </View>
+          ) : null
+        }
         renderItem={({ item: group }) => (
           <View style={styles.group}>
             <Text style={styles.groupLabel}>{group.title}</Text>
@@ -494,6 +534,7 @@ export default function Transactions() {
           </View>
         )}
       />
+      )}
 
       <Modal visible={detailsVisible} transparent animationType="slide">
         <View style={styles.modalOverlay}>
@@ -1096,5 +1137,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
     marginBottom: 10,
+  },
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: "#64748B",
+  },
+  footerLoader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    gap: 8,
+  },
+  footerText: {
+    fontSize: 13,
+    color: "#64748B",
   },
 });

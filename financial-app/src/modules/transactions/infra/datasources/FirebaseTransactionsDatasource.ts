@@ -2,14 +2,18 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocs,
   increment,
+  limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
   setDoc,
+  startAfter,
   Timestamp,
   updateDoc,
+  where,
 } from "firebase/firestore";
 
 import { auth, db }
@@ -25,6 +29,7 @@ import { Transaction }
 
 import {
   CreateTransactionInput,
+  PaginatedResult,
   UpdateTransactionInput,
 } from "../../domain/repositories/ITransactionsRepository";
 
@@ -123,6 +128,72 @@ export class FirebaseTransactionsDatasource {
         callback([]);
       },
     );
+  }
+
+  async getTransactionsInDateRange(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<Transaction[]> {
+    const uid = getCurrentUserId();
+    const rangeQuery = query(
+      getTransactionsCollection(uid),
+      where("date", ">=", Timestamp.fromDate(startDate)),
+      where("date", "<=", Timestamp.fromDate(endDate)),
+      orderBy("date", "desc"),
+    );
+
+    const snapshot = await getDocs(rangeQuery);
+
+    return snapshot.docs.map((docItem) =>
+      mapTransaction(docItem.id, docItem.data()),
+    );
+  }
+
+  async getTransactionsPaginated(
+    pageLimit: number,
+    cursor?: { lastDate: number } | null,
+  ): Promise<PaginatedResult<Transaction>> {
+    const uid = getCurrentUserId();
+    const constraints: any[] = [
+      orderBy("date", "desc"),
+    ];
+
+    if (cursor) {
+      constraints.push(
+        startAfter(new Date(cursor.lastDate)),
+      );
+    }
+
+    constraints.push(limit(pageLimit + 1));
+
+    const transactionsQuery = query(
+      getTransactionsCollection(uid),
+      ...constraints,
+    );
+
+    const snapshot = await getDocs(transactionsQuery);
+
+    const hasMore = snapshot.docs.length > pageLimit;
+    const docs = hasMore
+      ? snapshot.docs.slice(0, pageLimit)
+      : snapshot.docs;
+    const lastDoc = docs[docs.length - 1];
+
+    return {
+      data: docs.map((docItem) =>
+        mapTransaction(docItem.id, docItem.data()),
+      ),
+      cursor: lastDoc
+        ? {
+            lastDate:
+              lastDoc
+                .data()
+                .date.toDate()
+                .getTime(),
+          }
+        : null,
+      hasMore,
+    };
   }
 
   async createTransaction(
