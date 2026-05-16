@@ -22,6 +22,7 @@ module.exports = function (api) {
           ],
         },
       ],
+      "transform-remove-console",
     ],
   };
 };
