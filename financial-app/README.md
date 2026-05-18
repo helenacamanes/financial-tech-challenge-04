@@ -14,7 +14,7 @@ Antes de começar, você precisa ter instalado na sua máquina:
 ### 1. Clone o repositório
 
 ```bash
-git clone git@github.com:helenacamanes/fiap-tech-challenge03.git
+git clone git@github.com:helenacamanes/financial-tech-challenge-04.git
 cd financial-app
 ```
 
